@@ -1,0 +1,10 @@
+# Ignore everything by default
+*
+
+# Except the 5 platform distribution files
+!OctalBytes-Platform.html
+!otb-logo.jpg
+!one-logo.jpg
+!version.json
+!README.md
+!.gitignore
