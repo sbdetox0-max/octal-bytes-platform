@@ -1,0 +1,1495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Octal Bytes — by S.B Detox</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/jpeg" href="otb-logo.jpg">
+<style>
+:root{
+  --bg:#0b0906;--s1:#131009;--s2:#1a150e;--s3:#221c14;
+  --bdr:#2c2318;--bdr2:#3d3224;
+  --otb:#e8c97a;--odim:rgba(232,201,122,.13);
+  --one:#a07468;--ndim:rgba(160,116,104,.12);
+  --grn:#7aad80;--gdim:rgba(122,173,128,.1);
+  --gld:#deb96a;--ydim:rgba(222,185,106,.11);
+  --red:#b06060;--rdim:rgba(176,96,96,.1);
+  --txt:#ede0c4;--tx2:#9a8872;--tx3:#5a4e3e;--r:6px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;font-size:15px;line-height:1.5}
+.shell{max-width:1100px;margin:0 auto;padding:0 16px 80px}
+
+/* TICKER */
+.ticker-wrap{background:var(--s1);border-bottom:1px solid var(--bdr);overflow:hidden;height:30px;display:flex;align-items:center}
+.ticker-track{display:flex;gap:36px;width:max-content;animation:tick 55s linear infinite}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ti{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tx3);white-space:nowrap}
+.ti b{color:var(--tx2)}.tu{color:var(--grn)}.td{color:var(--red)}
+
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;padding:18px 0 16px;border-bottom:1px solid var(--bdr);flex-wrap:wrap;gap:12px}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-name{font-size:1.3rem;font-weight:700;letter-spacing:2px;color:var(--otb);text-transform:uppercase;line-height:1.2}
+.brand-by{font-size:10px;font-weight:500;letter-spacing:3px;color:var(--tx3);text-transform:uppercase;margin-top:2px}
+.hdr-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pill{font-family:'JetBrains Mono',monospace;font-size:11px;padding:5px 11px;border-radius:4px;border:1px solid var(--bdr2);background:var(--s2);color:var(--tx2)}
+.pill-day{color:var(--gld);border-color:rgba(251,191,36,.3);background:var(--ydim)}
+.pill-net{color:var(--one);border-color:rgba(167,139,250,.3);background:var(--ndim)}
+.w-btn{font-family:'Inter',sans-serif;font-weight:600;font-size:12px;letter-spacing:1px;text-transform:uppercase;padding:7px 18px;border-radius:var(--r);border:1px solid rgba(232,201,122,.5);background:linear-gradient(160deg,rgba(232,201,122,.16) 0%,rgba(232,201,122,.06) 100%);color:var(--otb);cursor:pointer;transition:all .18s;box-shadow:0 2px 8px rgba(0,0,0,.3),inset 0 1px 0 rgba(232,201,122,.12)}
+.w-btn:hover{background:linear-gradient(160deg,rgba(232,201,122,.26) 0%,rgba(232,201,122,.12) 100%);box-shadow:0 3px 12px rgba(0,0,0,.35)}.w-btn.on{border-color:rgba(122,173,128,.5);color:var(--grn);background:linear-gradient(160deg,rgba(122,173,128,.18) 0%,rgba(122,173,128,.07) 100%);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+
+/* TABS */
+nav.tabs{display:flex;border-bottom:1px solid var(--bdr);margin-bottom:24px;overflow-x:auto;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+.tab{font-family:'Inter',sans-serif;font-weight:600;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:16px 22px;border:none;background:none;color:var(--tx3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .18s;white-space:nowrap}
+.tab:hover{color:var(--tx2)}.tab.on{color:var(--otb);border-bottom-color:var(--otb)}
+.pane{display:none}.pane.on{display:block}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r);padding:20px;margin-bottom:12px}
+.ctitle{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);margin-bottom:16px}
+.card.at{border-top:2px solid var(--otb)}
+
+/* STATS */
+.sbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px}
+.stat{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);padding:14px 16px}
+.slbl{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);margin-bottom:6px}
+.sval{font-family:'JetBrains Mono',monospace;font-size:1.12rem;font-weight:600;color:var(--txt)}
+.sval.otb{color:var(--otb)}.sval.one{color:var(--one)}.sval.grn{color:var(--grn)}.sval.gld{color:var(--gld)}
+
+/* INFO ROWS */
+.ir{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(28,46,69,.6);font-size:13px}
+.ir:last-child{border-bottom:none}
+.il{color:var(--tx2)}.iv{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--txt)}
+.iv.otb{color:var(--otb)}.iv.one{color:var(--one)}.iv.grn{color:var(--grn)}.iv.gld{color:var(--gld)}.iv.red{color:var(--red)}
+
+/* INPUTS */
+.field{margin-bottom:14px}
+.flbl{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);display:block;margin-bottom:7px}
+.iw{display:flex;align-items:center;background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);transition:border-color .18s;overflow:hidden}
+.iw:focus-within{border-color:var(--otb)}.iw.one:focus-within{border-color:var(--one)}
+.iw input{flex:1;background:none;border:none;outline:none;padding:11px 14px;color:var(--txt);font-family:'JetBrains Mono',monospace;font-size:14px}
+.iw input::placeholder{color:var(--tx3)}
+.itag{padding:0 13px;color:var(--tx3);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;letter-spacing:1px;border-left:1px solid var(--bdr);align-self:stretch;display:flex;align-items:center}
+.itag.otb{color:var(--otb)}.itag.one{color:var(--one)}
+.maxb{font-family:'JetBrains Mono',monospace;font-size:10px;padding:5px 9px;margin:4px;border-radius:4px;border:1px solid var(--bdr2);background:transparent;color:var(--tx3);cursor:pointer;font-weight:600;transition:all .15s}
+.maxb:hover{border-color:var(--otb);color:var(--otb)}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 12px;border-radius:4px;border:1px solid var(--bdr);background:var(--s2);color:var(--tx3);cursor:pointer;transition:all .15s;font-weight:500}
+.chip:hover{border-color:var(--tx3);color:var(--txt)}.chip.on{border-color:var(--otb);background:var(--odim);color:var(--otb)}
+
+/* BUTTONS */
+.btn{font-family:'Inter',sans-serif;font-weight:700;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;padding:13px 20px;border-radius:var(--r);border:none;cursor:pointer;transition:all .18s;width:100%;margin-top:4px}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn-otb{
+  background:linear-gradient(160deg,#f0d68e 0%,var(--otb) 55%,#c8a44e 100%);
+  color:#1a0900;
+  box-shadow:0 3px 14px rgba(232,201,122,.22),0 1px 4px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.18);
+}
+.btn-otb:hover:not(:disabled){background:linear-gradient(160deg,#f8e0a0 0%,#e8c97a 50%,#d4a853 100%);box-shadow:0 6px 20px rgba(232,201,122,.3),0 2px 6px rgba(0,0,0,.4);transform:translateY(-1px)}
+.btn-otb:active:not(:disabled){transform:translateY(0);box-shadow:0 1px 6px rgba(232,201,122,.2)}
+.btn-one{
+  background:linear-gradient(160deg,#bc8f84 0%,var(--one) 55%,#8a5e54 100%);
+  color:#fff;
+  box-shadow:0 3px 14px rgba(160,116,104,.25),0 1px 4px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.14);
+}
+.btn-one:hover:not(:disabled){opacity:.9;transform:translateY(-1px);box-shadow:0 6px 18px rgba(160,116,104,.3)}
+.btn-one:active:not(:disabled){transform:translateY(0)}
+.btn-gld{
+  background:linear-gradient(160deg,#f0cc88 0%,var(--gld) 55%,#b8903a 100%);
+  color:#1a0900;font-weight:700;
+  box-shadow:0 3px 14px rgba(222,185,106,.22),0 1px 4px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.18);
+}
+.btn-gld:hover:not(:disabled){opacity:.9;transform:translateY(-1px);box-shadow:0 6px 18px rgba(222,185,106,.3)}
+.btn-gld:active:not(:disabled){transform:translateY(0)}
+.sm{font-family:'Inter',sans-serif;font-weight:600;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:7px 14px;border-radius:4px;border:none;cursor:pointer;transition:all .15s}
+.sm-otb{
+  background:linear-gradient(160deg,rgba(232,201,122,.18) 0%,rgba(232,201,122,.08) 100%);
+  color:var(--otb);border:1px solid rgba(232,201,122,.28);
+  box-shadow:0 1px 4px rgba(0,0,0,.25),inset 0 1px 0 rgba(232,201,122,.1);
+}
+.sm-otb:hover{background:linear-gradient(160deg,rgba(232,201,122,.28) 0%,rgba(232,201,122,.14) 100%);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.sm-one{
+  background:linear-gradient(160deg,rgba(160,116,104,.2) 0%,rgba(160,116,104,.08) 100%);
+  color:var(--one);border:1px solid rgba(160,116,104,.3);
+  box-shadow:0 1px 4px rgba(0,0,0,.25),inset 0 1px 0 rgba(160,116,104,.1);
+}
+.sm-one:hover{background:linear-gradient(160deg,rgba(160,116,104,.3) 0%,rgba(160,116,104,.15) 100%);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.sm-gld{
+  background:linear-gradient(160deg,rgba(222,185,106,.2) 0%,rgba(222,185,106,.08) 100%);
+  color:var(--gld);border:1px solid rgba(222,185,106,.3);
+  box-shadow:0 1px 4px rgba(0,0,0,.25),inset 0 1px 0 rgba(222,185,106,.1);
+}
+.sm-gld:hover{background:linear-gradient(160deg,rgba(222,185,106,.3) 0%,rgba(222,185,106,.15) 100%);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.sm-mut{background:var(--s2);border:1px solid var(--bdr);color:var(--tx3);box-shadow:0 1px 3px rgba(0,0,0,.2)}.sm-mut:hover{color:var(--tx2);border-color:var(--bdr2)}
+
+/* LAYOUT */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:680px){.two{grid-template-columns:1fr}}
+
+/* TABLE */
+.tw{overflow-x:auto;border-radius:var(--r);border:1px solid var(--bdr)}
+table{width:100%;border-collapse:collapse}
+thead th{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx3);padding:10px 14px;text-align:left;background:var(--s2);border-bottom:1px solid var(--bdr);white-space:nowrap}
+tbody td{padding:11px 14px;border-bottom:1px solid rgba(28,46,69,.5);font-family:'JetBrains Mono',monospace;font-size:12px;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(56,189,248,.02)}
+tfoot td{padding:10px 14px;background:var(--s2);font-family:'JetBrains Mono',monospace;font-size:12px;border-top:2px solid var(--bdr)}
+
+/* POOL CARDS */
+.pools{display:grid;gap:10px}
+.pc{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r);padding:18px 20px;transition:border-color .2s,box-shadow .2s}
+.pc:hover{border-color:var(--bdr2);box-shadow:0 4px 20px rgba(0,0,0,.35)}
+.pico img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.paddr{display:flex;align-items:center;gap:6px;margin-bottom:12px;background:var(--s2);border:1px solid var(--bdr);border-radius:4px;padding:5px 10px;overflow:hidden}
+.paddr-val{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tx3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.paddr-btn{background:none;border:none;cursor:pointer;padding:2px 5px;border-radius:3px;font-size:11px;color:var(--tx3);transition:all .15s;flex-shrink:0;line-height:1}
+.paddr-btn:hover{color:var(--txt);background:var(--s3)}
+.paddr-none{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tx3);opacity:.5;font-style:italic}
+.pt{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;gap:12px;flex-wrap:wrap}
+.pid{display:flex;align-items:center;gap:10px}
+.pico{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;flex-shrink:0}
+.psym{font-size:15px;font-weight:700}.psub{font-size:11px;color:var(--tx3);margin-top:1px}
+.pemit-val{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--one);text-align:right}
+.pemit-lbl{font-size:10px;color:var(--tx3);letter-spacing:1px;margin-top:1px;text-align:right}
+.pm{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media(max-width:560px){.pm{grid-template-columns:repeat(2,1fr)}}
+.psl{font-size:10px;color:var(--tx3);letter-spacing:1px;margin-bottom:4px}
+.psv{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--txt)}
+.ptiers{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.tchip{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 9px;border-radius:3px;border:1px solid var(--bdr);background:var(--s2);color:var(--tx3)}
+.tchip.best{border-color:rgba(251,191,36,.4);color:var(--gld);background:var(--ydim)}
+.pft{display:flex;gap:8px;flex-wrap:wrap}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--s2) 0%,var(--s1) 100%);border:1px solid var(--bdr);border-top:3px solid var(--otb);border-radius:var(--r);padding:28px 24px;margin-bottom:20px}
+.hero-h{font-size:1.5rem;font-weight:700;margin-bottom:6px;background:linear-gradient(90deg,var(--otb),#e8c888);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-s{font-size:13px;color:var(--tx2);margin-bottom:24px;line-height:1.7}
+.bgrid{display:grid;grid-template-columns:1fr 48px 1fr;align-items:end;gap:16px}
+@media(max-width:540px){.bgrid{grid-template-columns:1fr}.barrow{display:none}}
+.barrow{font-size:24px;color:var(--otb);padding-bottom:12px;text-align:center}
+
+/* VAULTS */
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px}
+.vc{background:var(--s1);border:1px solid var(--bdr);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:12px;transition:border-color .2s}
+.vc:hover{border-color:var(--gld)}
+.vt{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.vprize{font-size:15px;font-weight:700}.vdesc{font-size:11px;color:var(--tx3);margin-top:3px;line-height:1.5}
+.vtimer{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gld);background:var(--ydim);border:1px solid rgba(251,191,36,.25);padding:3px 8px;border-radius:3px;white-space:nowrap;flex-shrink:0}
+.vtimer.end{color:var(--red);background:var(--rdim);border-color:rgba(248,113,113,.25)}
+.vbid-lbl{font-size:10px;color:var(--tx3);letter-spacing:1px;margin-bottom:4px}
+.vbid-val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--txt)}
+.vbid-adr{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tx3);margin-top:2px}
+.vbounty{display:flex;justify-content:space-between;align-items:center;background:var(--ydim);border:1px solid rgba(251,191,36,.2);border-radius:4px;padding:8px 12px}
+.vbl{font-size:11px;color:var(--gld)}.vbv{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--gld);font-weight:600}
+.vft{display:flex;gap:8px}
+
+/* AMP BAR */
+.ampw{background:var(--s2);border:1px solid var(--bdr);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.ampt{display:flex;justify-content:space-between;margin-bottom:8px}
+.amplbl{font-size:11px;color:var(--tx3);letter-spacing:1px;font-weight:600;text-transform:uppercase}
+.ampval{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--grn);font-weight:600}
+.ampbar{height:6px;background:var(--s3);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.ampfill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--grn),var(--otb));transition:width .5s}
+.ampdesc{font-size:11px;color:var(--tx3)}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(7,12,20,.88);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
+.overlay.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--bdr2);border-radius:var(--r);padding:26px;width:100%;max-width:440px;position:relative;max-height:90vh;overflow-y:auto}
+.mt{font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;color:var(--otb)}
+.mt.one{color:var(--one)}.mt.gld{color:var(--gld)}
+.mc{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--tx3);font-size:16px;cursor:pointer;line-height:1}.mc:hover{color:var(--txt)}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;z-index:999;padding:12px 18px;border-radius:var(--r);font-size:12px;font-family:'JetBrains Mono',monospace;max-width:320px;opacity:0;transform:translateY(6px);transition:all .25s;pointer-events:none}
+#toast.show{opacity:1;transform:translateY(0)}
+#toast.ok{background:var(--s2);border:1px solid var(--grn);color:var(--grn)}
+#toast.err{background:var(--s2);border:1px solid var(--red);color:var(--red)}
+#toast.inf{background:var(--s2);border:1px solid var(--otb);color:var(--otb)}
+
+/* UPDATE BANNER */
+#update-bar{display:none;align-items:center;justify-content:space-between;gap:12px;padding:9px 18px;background:var(--s2);border-bottom:1px solid rgba(222,185,106,.35);font-size:12px;flex-wrap:wrap}
+#update-bar.show{display:flex}
+.upd-msg{color:var(--tx2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.upd-badge{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--gld);background:var(--ydim);border:1px solid rgba(222,185,106,.3);border-radius:3px;padding:2px 7px}
+.upd-notes{color:var(--tx3)}
+.upd-r{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.upd-dl{font-family:'Inter',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:5px 13px;border-radius:4px;background:var(--gld);color:#1a0a00;text-decoration:none;transition:opacity .15s}
+.upd-dl:hover{opacity:.85}
+.upd-dis{background:none;border:none;color:var(--tx3);font-size:14px;cursor:pointer;padding:2px 6px;line-height:1}.upd-dis:hover{color:var(--txt)}
+
+/* TOKEN LOGOS */
+.tlogo{width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:5px;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.tlogo-lg{width:30px;height:30px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.tlogo-sm{width:15px;height:15px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px;flex-shrink:0}
+
+/* MISC */
+.sh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.sh h3{font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx2)}
+.alert{display:flex;gap:10px;padding:12px 16px;border-radius:var(--r);font-size:12px;line-height:1.6;margin-bottom:12px}
+.ai{background:var(--odim);border:1px solid rgba(56,189,248,.25);color:var(--tx2)}
+.aw{background:var(--ydim);border:1px solid rgba(251,191,36,.3);color:var(--gld)}
+.nodata{text-align:center;padding:36px;color:var(--tx3);font-size:13px;line-height:2}
+.nodata span{display:block;font-size:26px;margin-bottom:8px}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(56,189,248,.2);border-top-color:var(--otb);border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.grptag{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--tx3);padding:4px 0;margin:16px 0 8px;border-bottom:1px solid var(--bdr)}
+.grptag:first-child{margin-top:0}
+@media(max-width:500px){.tab{padding:14px 12px;font-size:11px}}
+
+/* PROGRESS BAR (legacy, kept for fallback) */
+.prog{height:4px;background:var(--s3);border-radius:2px;overflow:hidden}
+.pf{height:100%;border-radius:2px;transition:width .3s}
+.pf.otb{background:var(--otb)}.pf.grn{background:var(--grn)}.pf.gld{background:var(--gld)}.pf.red{background:var(--red)}
+
+/* STAKE TIMELINE */
+.stl{min-width:130px}
+.stl-track{position:relative;height:6px;background:var(--s3);border-radius:3px;margin-bottom:5px}
+.stl-fill{position:absolute;top:0;left:0;height:100%;border-radius:3px;transition:width .3s}
+.stl-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:11px;height:11px;border-radius:50%;border:2px solid var(--bg);z-index:1}
+.stl-dot.act{background:var(--grn);box-shadow:0 0 7px var(--grn)}
+.stl-dot.grc{background:var(--gld);box-shadow:0 0 7px var(--gld);animation:glowpulse 1s ease-in-out infinite alternate}
+.stl-dot.red{background:var(--red);box-shadow:0 0 7px var(--red);animation:glowpulse 0.7s ease-in-out infinite alternate}
+.stl-dot.end{background:var(--tx3)}
+.stl-dot.fnd{background:var(--one);box-shadow:0 0 5px var(--one)}
+.stl-lbl{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--tx3);line-height:1.2}
+@keyframes glowpulse{to{box-shadow:0 0 12px currentColor}}
+
+/* INFO BANNER */
+.info-banner{background:var(--s2);border:1px solid var(--bdr);border-left:3px solid var(--bdr2);border-radius:var(--r);margin-bottom:16px;overflow:hidden}
+.info-toggle{width:100%;background:none;border:none;padding:11px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--tx2);font-size:12px;font-family:'Inter',sans-serif;font-weight:500;text-align:left}
+.info-toggle:hover{background:rgba(255,255,255,.025)}
+.info-toggle .itarrow{transition:transform .2s;font-size:10px;color:var(--tx3)}
+.info-toggle.open .itarrow{transform:rotate(180deg)}
+.info-body{padding:0 16px 14px;font-size:12px;color:var(--tx3);line-height:1.75}
+.info-body p{margin-bottom:8px}.info-body p:last-child{margin-bottom:0}
+.info-body strong{color:var(--tx2);font-weight:600}
+
+/* STEP INDICATOR */
+.steps{display:flex;align-items:stretch;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+.step{background:var(--s3);border:1px solid var(--bdr2);border-radius:var(--r);padding:10px 14px;flex:1;min-width:110px}
+.step-n{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--otb);margin-bottom:5px;letter-spacing:1px}
+.step-t{font-size:13px;font-weight:600;color:var(--txt);margin-bottom:2px}
+.step-s{font-size:11px;color:var(--tx3)}
+.step-arr{font-size:16px;color:var(--tx3);align-self:center;flex-shrink:0}
+@media(max-width:540px){.step-arr{display:none}}
+
+/* FULL TERM HERO */
+.ft-hero{background:var(--s3);border:1px solid rgba(222,185,106,.25);border-radius:var(--r);padding:12px 16px;margin:10px 0;text-align:center}
+.ft-lbl{font-size:10px;color:var(--tx3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px}
+.ft-val{font-family:'JetBrains Mono',monospace;font-size:1.6rem;font-weight:700;color:var(--gld)}
+.ft-sub{font-size:10px;color:var(--tx3);margin-top:2px}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+
+<!-- MODAL: Pool Deposit -->
+<div class="overlay" id="mPool">
+  <div class="modal">
+    <button class="mc" onclick="cm('mPool')">✕</button>
+    <div class="mt one" id="mPool-t">Stake in Pool</div>
+    <div class="field">
+      <label class="flbl">Amount</label>
+      <div class="iw one"><input type="number" id="pAmt" placeholder="0.00" oninput="calcPool()"><span class="itag" id="pTag">TOKEN</span><button class="maxb" onclick="pMax()">MAX</button></div>
+    </div>
+    <div class="field">
+      <label class="flbl">Lock Tier</label>
+      <div id="pTiers" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px"></div>
+    </div>
+    <div class="card" style="background:var(--s2);margin:8px 0">
+      <div class="ir"><span class="il">Lock</span><span class="iv" id="pi-lock">No lock</span></div>
+      <div class="ir"><span class="il">Multiplier</span><span class="iv grn" id="pi-mult">1.0×</span></div>
+      <div class="ir"><span class="il">ONE / Day (est.)</span><span class="iv one" id="pi-day">—</span></div>
+      <div class="ir"><span class="il">ONE / Year (est.)</span><span class="iv one" id="pi-yr">—</span></div>
+    </div>
+    <button class="btn btn-one" onclick="doDeposit()">Approve &amp; Stake</button>
+  </div>
+</div>
+
+<!-- MODAL: Stake OTB confirm -->
+<div class="overlay" id="mStake">
+  <div class="modal">
+    <button class="mc" onclick="cm('mStake')">✕</button>
+    <div class="mt">Confirm Stake</div>
+    <div id="mStake-b"></div>
+    <button class="btn btn-otb" style="margin-top:12px" onclick="doStake()">Confirm &amp; Stake OTB</button>
+  </div>
+</div>
+
+<!-- MODAL: Bid -->
+<div class="overlay" id="mBid">
+  <div class="modal">
+    <button class="mc" onclick="cm('mBid')">✕</button>
+    <div class="mt gld" id="mBid-t">Place Bid</div>
+    <div id="mBid-b"></div>
+    <div class="field" style="margin-top:14px">
+      <label class="flbl">Your Bid (ONE)</label>
+      <div class="iw one"><input type="number" id="bidAmt" placeholder="0.00"><span class="itag one">ONE</span><button class="maxb" onclick="bidMax()">MAX</button></div>
+    </div>
+    <button class="btn btn-one" style="margin-top:4px" onclick="doBid()">Approve &amp; Place Bid</button>
+  </div>
+</div>
+
+<!-- MODAL: Create Vault -->
+<div class="overlay" id="mVault">
+  <div class="modal">
+    <button class="mc" onclick="cm('mVault')">✕</button>
+    <div class="mt gld">Create Bounty Vault</div>
+    <div class="field">
+      <label class="flbl">Prize Type</label>
+      <div style="display:flex;gap:8px"><button class="chip on" id="vt-n" onclick="setVT('n')">Native PLS</button><button class="chip" id="vt-t" onclick="setVT('t')">ERC-20 Token</button></div>
+    </div>
+    <div id="vtok-f" class="field" style="display:none">
+      <label class="flbl">Token Address</label>
+      <div class="iw"><input type="text" id="vTok" placeholder="0x..."></div>
+    </div>
+    <div class="field">
+      <label class="flbl">Prize Amount</label>
+      <div class="iw"><input type="number" id="vAmt" placeholder="0.00"><span class="itag" id="vAmtTag">PLS</span></div>
+    </div>
+    <div class="field">
+      <label class="flbl">Bounty Price in ONE — 0 for auction only</label>
+      <div class="iw one"><input type="number" id="vBounty" placeholder="0"><span class="itag one">ONE</span></div>
+    </div>
+    <div class="field">
+      <label class="flbl">Duration (1–100 days)</label>
+      <div class="iw"><input type="number" id="vDur" placeholder="30" min="1" max="100"><span class="itag">DAYS</span></div>
+      <div class="chips" style="margin-top:8px">
+        <button class="chip" onclick="document.getElementById('vDur').value=7">7d</button>
+        <button class="chip" onclick="document.getElementById('vDur').value=14">14d</button>
+        <button class="chip" onclick="document.getElementById('vDur').value=30">30d</button>
+        <button class="chip" onclick="document.getElementById('vDur').value=60">60d</button>
+        <button class="chip" onclick="document.getElementById('vDur').value=100">100d</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="flbl">Description (max 200 chars)</label>
+      <div class="iw"><input type="text" id="vDesc" placeholder="What's in the vault?"></div>
+    </div>
+    <div class="alert aw" style="margin-top:4px"><span>⚠</span><span>10% of the winning bid is permanently burned. Fee-on-transfer tokens not supported.</span></div>
+    <button class="btn btn-gld" style="margin-top:4px" onclick="doCreateVault()">Create Vault</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════ -->
+
+<div id="update-bar">
+  <div class="upd-msg">
+    <span class="upd-badge" id="upd-ver"></span>
+    <span>Update available for OctalBytes Platform</span>
+    <span class="upd-notes" id="upd-notes"></span>
+  </div>
+  <div class="upd-r">
+    <a class="upd-dl" id="upd-link" href="#" target="_blank" rel="noopener">Download Update</a>
+    <button class="upd-dis" onclick="document.getElementById('update-bar').classList.remove('show')" title="Dismiss">✕</button>
+  </div>
+</div>
+
+<div class="ticker-wrap"><div class="ticker-track" id="ticker"></div></div>
+
+<div class="shell">
+
+<header>
+  <div class="brand">
+    <img src="otb-logo.jpg" alt="OTB" style="width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:center 10%;flex-shrink:0;border:1px solid rgba(232,201,122,.25);box-shadow:0 2px 10px rgba(0,0,0,.4)">
+    <div>
+      <div class="brand-name">Octal Bytes</div>
+      <div class="brand-by">by S.B Detox · PulseChain</div>
+    </div>
+  </div>
+  <div class="hdr-r">
+    <div class="pill pill-day">DAY <span id="hdr-day">0</span></div>
+    <div class="pill pill-net">⬡ PULSECHAIN</div>
+    <div class="pill" id="hdr-ver" style="cursor:pointer" onclick="checkForUpdate(true)" title="Click to check for updates">v1.0.0</div>
+    <button class="w-btn" id="wBtn" onclick="connectWallet()">Connect Wallet</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab on"  onclick="showTab('pools',this)">ONE Reward Pools</button>
+  <button class="tab"     onclick="showTab('stake',this)">OTB Staking</button>
+  <button class="tab"     onclick="showTab('vault',this)">Bounty Prize Vault</button>
+</nav>
+
+<!-- ═══ PAGE 1: ONE POOLS ═══ -->
+<div class="pane on" id="pane-pools">
+
+  <div class="info-banner" id="ib-pools">
+    <button class="info-toggle" onclick="toggleInfo('pools')">
+      <span>ℹ What is this?</span><span class="itarrow">▼</span>
+    </button>
+    <div class="info-body" style="display:none" id="ibd-pools">
+      <p>The <strong>ONE Reward Pools</strong> let you stake popular PulseChain tokens to earn <strong>ONE tokens</strong> every single day. There are 41 pools with a combined 10,850 ONE distributed daily.</p>
+      <p>Pick any pool, choose a lock tier (no lock → 365 days), and earn ONE continuously. <strong>Longer locks earn a multiplier</strong> — the 365-day tier earns 3× more ONE than no lock. You can claim your ONE at any time; withdrawals are available once your lock expires.</p>
+      <p>Once you have ONE, burn it 1:1 to receive OTB, then head to the <strong>OTB Staking</strong> tab to lock it for inflation rewards.</p>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-h">Burn ONE — Receive OTB</div>
+    <div class="hero-s">The only way to get OTB is to burn ONE at 1:1. OTB is then staked for 400–10,000 days to earn inflation rewards. T-Share price rises every single day — staking earlier always gets you more T-Shares per OTB than staking later.</div>
+    <div class="steps">
+      <div class="step"><div class="step-n">STEP 1</div><div class="step-t">Earn ONE</div><div class="step-s">Stake tokens in reward pools below</div></div>
+      <div class="step-arr">→</div>
+      <div class="step"><div class="step-n">STEP 2</div><div class="step-t">Burn ONE → OTB</div><div class="step-s">1:1 exchange, always. Use the form below.</div></div>
+      <div class="step-arr">→</div>
+      <div class="step"><div class="step-n">STEP 3</div><div class="step-t">Stake OTB</div><div class="step-s">400–10,000 days to earn OTB inflation</div></div>
+    </div>
+    <div class="bgrid">
+      <div>
+        <div class="flbl" style="display:flex;align-items:center"><img src="one-logo.jpg" class="tlogo" alt="ONE">You Burn (ONE)</div>
+        <div class="iw one"><input type="number" id="burnAmt" placeholder="0.00" oninput="calcBurn()"><span class="itag one">ONE</span><button class="maxb" onclick="burnMax()">MAX</button></div>
+        <div style="margin-top:6px;font-size:11px;color:var(--tx3)">Balance: <span id="burnBal" style="color:var(--one)">—</span></div>
+      </div>
+      <div class="barrow">→</div>
+      <div>
+        <div class="flbl" style="display:flex;align-items:center"><img src="otb-logo.jpg" class="tlogo" alt="OTB" style="object-position:center 10%">You Receive (OTB)</div>
+        <div class="iw" style="border-color:rgba(232,201,122,.3)"><input type="text" id="burnOut" placeholder="0.00" readonly style="color:var(--otb)"><span class="itag otb">OTB</span></div>
+        <div style="margin-top:6px;font-size:11px;color:var(--tx3)">Rate: <span style="color:var(--grn)">Always 1 : 1</span></div>
+      </div>
+    </div>
+    <button class="btn btn-otb" style="max-width:280px;margin-top:20px" onclick="doBurn()">Approve &amp; Burn ONE</button>
+    <div class="sbar" style="margin-top:20px;margin-bottom:0">
+      <div class="stat"><div class="slbl">ONE Burned</div><div class="sval one" id="b-burned">—</div></div>
+      <div class="stat"><div class="slbl">OTB in Existence</div><div class="sval otb" id="b-supply">—</div></div>
+      <div class="stat"><div class="slbl">Your OTB Balance</div><div class="sval otb" id="b-otbbal">—</div></div>
+      <div class="stat"><div class="slbl">T-Share Price</div><div class="sval gld" id="b-sprice">1,000 OTB</div></div>
+    </div>
+  </div>
+
+  <div class="sbar">
+    <div class="stat"><div class="slbl">ONE Minted Total</div><div class="sval one" id="p-minted">—</div></div>
+    <div class="stat"><div class="slbl">Burn Ratio</div><div class="sval gld" id="p-bratio">—</div></div>
+    <div class="stat"><div class="slbl">Active Pools</div><div class="sval">41</div></div>
+    <div class="stat"><div class="slbl">Platform Daily ONE</div><div class="sval one">10,850</div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div class="ctitle" style="margin-bottom:3px;display:flex;align-items:center"><img src="one-logo.jpg" class="tlogo-sm" alt="ONE">ONE Minted Over Time</div>
+        <div style="font-size:11px;color:var(--tx3)">Cumulative ONE distributed to stakers across all pools. Rising curve = growing ecosystem.</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:10px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">Total Minted</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:1.15rem;font-weight:700;color:var(--one)" id="one-chart-total">—</div>
+      </div>
+    </div>
+    <div style="position:relative;height:64px;width:100%">
+      <svg id="one-chart" width="100%" height="64" style="overflow:visible"></svg>
+      <div style="display:flex;justify-content:space-between;margin-top:3px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tx3)">
+        <span>Day 0</span><span id="one-chart-x">Today</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sh" style="margin-top:4px">
+    <h3>Stake tokens — earn ONE every day</h3>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="sm sm-otb" id="pf-all" onclick="filterPools('all')">All</button>
+      <button class="sm sm-mut" id="pf-rh"  onclick="filterPools('rh')">RH Tokens</button>
+      <button class="sm sm-mut" id="pf-9i"  onclick="filterPools('9i')">9inch</button>
+      <button class="sm sm-mut" id="pf-sb"  onclick="filterPools('sb')">S.B Detox</button>
+      <button class="sm sm-mut" id="pf-ot"  onclick="filterPools('ot')">Other</button>
+    </div>
+  </div>
+  <div class="pools" id="poolList"></div>
+</div>
+
+<!-- ═══ PAGE 2: OTB STAKING ═══ -->
+<div class="pane" id="pane-stake">
+
+  <div class="info-banner" id="ib-stake">
+    <button class="info-toggle" onclick="toggleInfo('stake')">
+      <span>ℹ What is this?</span><span class="itarrow">▼</span>
+    </button>
+    <div class="info-body" style="display:none" id="ibd-stake">
+      <p><strong>OTB Staking</strong> is inspired by HEX. You burn ONE to get OTB (1:1 on the Pools tab), then lock OTB for 400–10,000 days. When you stake, OTB is burned and you receive <strong>T-Shares</strong> — your claim on daily OTB inflation.</p>
+      <p>Every day, 3.69% of the effective OTB supply (real + virtual) is distributed proportionally to all T-Share holders. <strong>Longer stakes earn a duration bonus</strong> (up to 2× at 10,000 days), and the <strong>Adoption Amplifier</strong> gives early stakers up to 20% bonus T-Shares — fading to 0 at Day 1,825.</p>
+      <p>End your stake on time to receive your principal back plus all inflation rewards. Early exit incurs a penalty; late exit after a 14-day grace period also reduces your payout.</p>
+    </div>
+  </div>
+
+  <div class="sbar">
+    <div class="stat"><div class="slbl">T-Share Price</div><div class="sval gld" id="s-price">1,000 OTB</div></div>
+    <div class="stat"><div class="slbl">Total T-Shares</div><div class="sval" id="s-tsh">—</div></div>
+    <div class="stat"><div class="slbl">OTB Staked</div><div class="sval otb" id="s-staked">—</div></div>
+    <div class="stat"><div class="slbl">Protocol Day</div><div class="sval gld" id="s-day">0</div></div>
+    <div class="stat"><div class="slbl">Effective Supply (Real + Virtual)</div><div class="sval" id="s-effsup" style="font-size:.85rem">—</div></div>
+    <div class="stat"><div class="slbl">OTB per T-Share / Day</div><div class="sval gld" id="s-tshpay">—</div></div>
+  </div>
+
+  <div class="ampw">
+    <div class="ampt">
+      <span class="amplbl" style="display:flex;align-items:center;gap:6px"><img src="otb-logo.jpg" class="tlogo-sm" alt="OTB" style="object-position:center 10%">Adoption Amplifier — Early Staker Bonus T-Shares</span>
+      <span class="ampval" id="s-amppct">20.0%</span>
+    </div>
+    <div class="ampbar"><div class="ampfill" id="s-ampbar" style="width:100%"></div></div>
+    <div class="ampdesc">Virtual OTB added to your T-share calculation at stake. Never minted, never returned. Decays linearly to 0% at Day 1,825. <span id="s-ampdays" style="color:var(--grn)">1,825 days remaining</span></div>
+  </div>
+
+  <!-- DAILY T-SHARE PAYOUT TRACKER -->
+  <div class="card" style="margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div class="ctitle" style="margin-bottom:4px">Daily T-Share Payout — OTB earned per T-Share per day</div>
+        <div style="font-size:11px;color:var(--tx3)">Rising share price means each T-Share earns more OTB over time as the effective supply grows. Hold longer = accumulate more.</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:10px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Today's Payout</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--gld)" id="tsp-today">—</div>
+        <div style="font-size:10px;color:var(--tx3);margin-top:2px">OTB / T-Share / day</div>
+      </div>
+    </div>
+    <div style="position:relative;height:100px;width:100%" id="tsp-chart-wrap">
+      <svg id="tsp-chart" width="100%" height="100" style="overflow:visible;cursor:crosshair"></svg>
+      <div id="tsp-tip" style="display:none;position:absolute;background:var(--s2);border:1px solid var(--bdr2);border-radius:4px;padding:5px 9px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--txt);pointer-events:none;white-space:nowrap;z-index:10"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--tx3)">
+        <span id="tsp-x0">Day 0</span><span>— OTB per T-Share per day —</span><span id="tsp-xn">Today</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="two">
+    <div>
+      <div class="card at">
+        <div class="ctitle" style="display:flex;align-items:center;gap:6px"><img src="otb-logo.jpg" class="tlogo-sm" alt="OTB" style="object-position:center 10%">New Stake</div>
+        <div class="two" style="margin-bottom:14px">
+          <div class="stat"><div class="slbl">Your OTB</div><div class="sval otb" id="st-bal">—</div></div>
+          <div class="stat"><div class="slbl">Share Price</div><div class="sval gld" id="st-price">1,000 OTB</div></div>
+        </div>
+        <div class="field">
+          <label class="flbl">Stake Amount (OTB)</label>
+          <div class="iw"><input type="number" id="stAmt" placeholder="0.00" oninput="calcStake()"><span class="itag otb">OTB</span><button class="maxb" onclick="stMax()">MAX</button></div>
+        </div>
+        <div class="field">
+          <label class="flbl">Duration — 400 to 10,000 days</label>
+          <div class="iw"><input type="number" id="stDays" placeholder="400" min="400" max="10000" oninput="calcStake()"><span class="itag">DAYS</span></div>
+          <div class="chips">
+            <button class="chip" onclick="setDur(400,this)">400d</button>
+            <button class="chip" onclick="setDur(730,this)">2yr</button>
+            <button class="chip" onclick="setDur(1825,this)">5yr</button>
+            <button class="chip" onclick="setDur(3650,this)">10yr</button>
+            <button class="chip" onclick="setDur(5555,this)">5,555d</button>
+            <button class="chip" onclick="setDur(10000,this)">MAX</button>
+          </div>
+        </div>
+        <button class="btn btn-otb" onclick="openStakeConfirm()">Stake OTB</button>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <div class="ctitle">Live Preview</div>
+        <!-- T-Shares — the bigger number the better -->
+        <div class="ir">
+          <span class="il">T-Shares Received</span>
+          <span style="text-align:right">
+            <span class="iv gld" id="pv-tsh">—</span>
+            <div style="font-size:10px;color:var(--tx3);margin-top:2px">Bigger = more daily OTB forever</div>
+          </span>
+        </div>
+        <!-- Duration bonus -->
+        <div class="ir">
+          <span class="il" style="display:flex;flex-direction:column">Duration Bonus<span style="font-size:10px;color:var(--tx3)">Longer lock → more T-Shares</span></span>
+          <span class="iv grn" id="pv-bonus">—</span>
+        </div>
+        <!-- Amplifier -->
+        <div class="ir">
+          <span class="il" style="display:flex;flex-direction:column">Amplifier Bonus<span style="font-size:10px;color:var(--tx3)">Early stakers only — fades Day 1,825</span></span>
+          <span class="iv grn" id="pv-amp">—</span>
+        </div>
+        <!-- Daily OTB -->
+        <div style="background:var(--s2);border:1px solid var(--bdr);border-radius:4px;padding:10px 14px;margin:10px 0">
+          <div style="font-size:10px;color:var(--tx3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Est. Earnings at Current Pool Size</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <div><div style="font-size:10px;color:var(--tx3)">Per Day</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--grn)" id="pv-daily">—</div></div>
+            <div><div style="font-size:10px;color:var(--tx3)">Per Year</div><div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--grn)" id="pv-yearly">—</div></div>
+          </div>
+          <div class="ft-hero">
+            <div class="ft-lbl">Full Term Payout</div>
+            <div class="ft-val" id="pv-total">—</div>
+            <div class="ft-sub">total OTB earned over full stake duration</div>
+          </div>
+        </div>
+        <div class="ir"><span class="il">Pool Share (after stake)</span><span class="iv" id="pv-share">—</span></div>
+        <div class="ir"><span class="il">Stake Ends</span><span class="iv" style="text-align:right" id="pv-end">—</span></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Why Longer &amp; Bigger Pays More</div>
+        <div class="ir"><span class="il">Duration bonus range</span><span class="iv">1.0× → 2.0× (400d → 10,000d)</span></div>
+        <div class="ir"><span class="il">Virtual supply now</span><span class="iv otb" id="pv-virt">5,000,000,000</span></div>
+        <div class="ir"><span class="il">Real + virtual drives inflation</span><span class="iv">Earlier stakes earn bigger share</span></div>
+        <div class="ir"><span class="il">Inflation rate</span><span class="iv">3.69% / year of effective supply</span></div>
+        <div class="ir"><span class="il">Early exit penalty</span><span class="iv">70% to stakers · 20% LP · 10% treasury</span></div>
+        <div class="ir"><span class="il">Grace period</span><span class="iv">14 days after end date</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sh" style="margin-top:16px">
+    <h3>My Stakes</h3>
+    <button class="sm sm-otb" onclick="loadStakes()">Refresh</button>
+  </div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>ID</th><th>OTB Staked</th><th>T-Shares</th><th>Timeline</th><th>Days Left</th><th>Pending OTB</th><th>Status</th><th></th></tr></thead>
+      <tbody id="stBody"><tr><td colspan="8"><div class="nodata"><span>🔒</span>Connect wallet to view your stakes</div></td></tr></tbody>
+      <tfoot id="stFoot" style="display:none">
+        <tr>
+          <td style="color:var(--tx3);font-size:10px;letter-spacing:1px">TOTALS</td>
+          <td style="color:var(--otb)" id="tot-otb">—</td>
+          <td style="color:var(--gld)" id="tot-tsh">—</td>
+          <td colspan="2"></td>
+          <td style="color:var(--grn)" id="tot-yield">—</td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ═══ PAGE 3: BOUNTY VAULT ═══ -->
+<div class="pane" id="pane-vault">
+
+  <div class="info-banner" id="ib-vault">
+    <button class="info-toggle" onclick="toggleInfo('vault')">
+      <span>ℹ What is this?</span><span class="itarrow">▼</span>
+    </button>
+    <div class="info-body" style="display:none" id="ibd-vault">
+      <p>The <strong>Bounty Prize Vault</strong> is a permissionless auction system. Anyone can lock any token (PLS, HEX, ERC-20s) as a prize for 1–100 days. Bidders compete using <strong>ONE tokens</strong>.</p>
+      <p>There are two ways to win: <strong>Instant Win</strong> — be the first to bid at or above the Bounty Price set by the depositor. Or <strong>Auction End</strong> — hold the highest bid when the timer runs out. Outbid users are refunded immediately.</p>
+      <p>The depositor receives 90% of the winning ONE bid. The remaining 10% is <strong>permanently burned</strong>, making ONE deflationary. Anti-snipe protection extends the timer by 15 minutes if a bid arrives in the last 10 minutes (max 3 extensions).</p>
+    </div>
+  </div>
+
+  <div class="sbar">
+    <div class="stat"><div class="slbl">Active Vaults</div><div class="sval gld" id="va-act">—</div></div>
+    <div class="stat"><div class="slbl">Total Settled</div><div class="sval grn" id="va-set">—</div></div>
+    <div class="stat"><div class="slbl">ONE Burned (Vault)</div><div class="sval one" id="va-burn">—</div></div>
+    <div class="stat"><div class="slbl">Your ONE Balance</div><div class="sval one" id="va-onebal">—</div></div>
+  </div>
+
+  <div class="alert ai"><span>ℹ</span><span>Lock any token as a prize. Bidders compete using ONE. The highest bidder wins when the auction ends, or anyone can win instantly by meeting the Bounty Price. 90% of the winning bid goes to the depositor — 10% is permanently burned.</span></div>
+
+  <div class="sh">
+    <h3>Active Vaults</h3>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="sm sm-gld" onclick="om('mVault')">+ Create Vault</button>
+      <button class="sm sm-otb" onclick="loadVaults()">Refresh</button>
+      <button class="sm sm-one" id="vs-bid" onclick="sortV('bid')">Highest Bid</button>
+      <button class="sm sm-mut" id="vs-end" onclick="sortV('end')">Ending Soon</button>
+    </div>
+  </div>
+
+  <div class="vgrid" id="vGrid">
+    <div style="grid-column:1/-1"><div class="nodata"><span>🏆</span>Connect wallet to view active vaults</div></div>
+  </div>
+
+  <div class="sh" style="margin-top:20px"><h3>My Vaults</h3></div>
+  <div class="tw">
+    <table>
+      <thead><tr><th>ID</th><th>Prize</th><th>Highest Bid</th><th>Ends</th><th>Status</th><th></th></tr></thead>
+      <tbody id="myVBody"><tr><td colspan="6"><div class="nodata" style="padding:20px">No vaults yet</div></td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<script>
+const VERSION = '1.0.0';
+// ── Update check ─────────────────────────────────────────────────────────────
+// Host version.json at the raw URL below (update YOUR_USERNAME/YOUR_REPO).
+// File format: {"version":"1.1.0","notes":"What changed","download":"https://github.com/..."}
+const UPDATE_JSON_URL = 'https://raw.githubusercontent.com/sbdetox0-max/octal-bytes-platform/main/version.json';
+
+async function checkForUpdate(manual=false){
+  const pill = document.getElementById('hdr-ver');
+  if(manual && pill){ pill.textContent = 'checking…'; }
+  try{
+    const res = await fetch(UPDATE_JSON_URL+'?t='+Date.now(), {cache:'no-store'});
+    if(!res.ok) throw new Error('fetch failed');
+    const data = await res.json();
+    if(pill) pill.textContent = 'v'+VERSION;
+    if(data.version && data.version !== VERSION){
+      document.getElementById('upd-ver').textContent   = 'v'+data.version;
+      document.getElementById('upd-notes').textContent = data.notes ? '— '+data.notes : '';
+      document.getElementById('upd-link').href          = data.download || UPDATE_JSON_URL;
+      document.getElementById('update-bar').classList.add('show');
+    } else if(manual){
+      toast('You\'re on the latest version (v'+VERSION+')','ok');
+      if(pill) pill.textContent = 'v'+VERSION+' ✓';
+      setTimeout(()=>{ if(pill) pill.textContent='v'+VERSION; }, 3000);
+    }
+  } catch(e){
+    if(pill) pill.textContent = 'v'+VERSION;
+    if(manual) toast('Update check failed — check your connection','err');
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Deployed contract addresses — fill in after mainnet deploy ──────────────
+// Leave as '0x000...' until deployed; the platform auto-falls back to demo data.
+const CFG={
+  chainId:'0x171',
+  ONE:  '0x0000000000000000000000000000000000000001', // TODO: TheOne.sol deployed address
+  OTB:  '0x0000000000000000000000000000000000000002', // TODO: OctalBytes.sol deployed address
+  VAULT:'0x0000000000000000000000000000000000000003', // TODO: BountyVault.sol deployed address
+};
+
+// Minimal ABIs matching the actual deployed contracts
+const ONE_ABI=[
+  "function balanceOf(address) view returns (uint256)",
+  "function totalSupply() view returns (uint256)",
+  "function totalBurned() view returns (uint256)",
+  "function totalMinted() view returns (uint256)",
+  "function burnRatioPct() view returns (uint256)",
+  "function approve(address,uint256) returns (bool)",
+  "function burn(address,uint256) external",
+];
+const OTB_ABI=[
+  "function balanceOf(address) view returns (uint256)",
+  "function approve(address,uint256) returns (bool)",
+  "function burnOneForOtb(uint256) external",
+  "function stake(uint256,uint256) external returns (uint256)",
+  "function endStake(uint256) external",
+  "function claimRewards(uint256) external",
+  "function protocolStats() view returns (tuple(uint256 otbTotalSupply,uint256 otbTotalStaked,uint256 otbCirculating,uint256 totalTShares,uint256 sharePrice,uint256 virtualSupply,uint256 amplifierPct,uint256 daysSinceLaunch,uint256 daysUntilAmplifierEnds,uint256 daysUntilVirtualEnds,uint256 dailyInflationOtb,uint256 activeStakeCount,uint256 founderStakesClaimed))",
+  "function userDashboard(address) view returns (tuple(uint256 id,uint256 principal,uint256 tShares,uint256 poolSharePct,uint32 startDay,uint32 endDay,uint256 daysRemaining,uint256 daysLate,uint256 pendingOtb,uint256 earlyExitPenalty,bool ended,bool inGracePeriod,bool isOverdue)[])",
+  "function currentSharePrice() view returns (uint256)",
+  "function launchDay() view returns (uint256)",
+  "function totalTShares() view returns (uint256)",
+];
+
+const TIERS=[
+  {days:0,  bps:10000,lbl:'No Lock',mult:'1.0×'},
+  {days:30, bps:11000,lbl:'30 Days', mult:'1.1×'},
+  {days:90, bps:12000,lbl:'90 Days', mult:'1.2×'},
+  {days:180,bps:20000,lbl:'180 Days',mult:'2.0×'},
+  {days:365,bps:30000,lbl:'365 Days',mult:'3.0×'},
+];
+
+// addr: PulseChain ERC20 contract address. dec: token decimals.
+// SB Detox tokens (sb group) — fill in your contract addresses before mainnet deploy.
+const POOLS=[
+  {g:'rh',sym:'HEX',   name:'HEX',                       daily:1000,col:'#ff6b35',dec:8, addr:'0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39'},
+  {g:'rh',sym:'INC',   name:'Incentive',                 daily:1000,col:'#f59e0b',dec:18,addr:'0x2fa878Ab3F87CC1C9737Fc071108F904c0B0C95d'},
+  {g:'rh',sym:'WPLS',  name:'Wrapped Pulse',             daily:1000,col:'#818cf8',dec:18,addr:'0xA1077a294dDE1B09bB078844df40758a5D0f9a27'},
+  {g:'rh',sym:'PLSX',  name:'PulseX',                    daily:500, col:'#34d399',dec:18,addr:'0x95B303987A60C71504D99Aa1b13B4DA07b0790ab'},
+  {g:'9i',sym:'9INCH', name:'9inch',                     daily:200, col:'#ef4444',dec:18,addr:'0x3ca80d83277e721171284667829c686527b8b3c5'},
+  {g:'9i',sym:'BBC',   name:'Big Bonus Coin',            daily:200, col:'#10b981',dec:18,addr:'0x8b4cfb020af9acad95ad80020ce8f67fbb2c700e'},
+  {g:'9i',sym:'BSTRD', name:'Bastard Token',             daily:200, col:'#8b5cf6',dec:18,addr:null}, // TODO: fill in address
+  {g:'sb',sym:'DCKDIV',name:'Duck Diver',                daily:100, col:'#06b6d4',dec:18,addr:null},
+  {g:'sb',sym:'pSHANE',name:'Pee Shane Unstable',        daily:100, col:'#ec4899',dec:18,addr:null},
+  {g:'sb',sym:'DGNIN', name:'Dragxion Nine',             daily:100, col:'#a855f7',dec:18,addr:null},
+  {g:'sb',sym:'MRDT',  name:'Mr Dragxion Token',         daily:100, col:'#f97316',dec:18,addr:null},
+  {g:'sb',sym:'DRGK',  name:'Dragxion Knight',           daily:100, col:'#eab308',dec:18,addr:null},
+  {g:'sb',sym:'BJTK',  name:'Bull Jizzed Token',         daily:100, col:'#84cc16',dec:18,addr:null},
+  {g:'sb',sym:'DRXI',  name:'Dragxion Eye',              daily:100, col:'#14b8a6',dec:18,addr:null},
+  {g:'sb',sym:'FCKD',  name:'Fcuk A Duck',               daily:100, col:'#f43f5e',dec:18,addr:null},
+  {g:'sb',sym:'CREAM', name:'CreamPie',                  daily:100, col:'#fb7185',dec:18,addr:null},
+  {g:'sb',sym:'STIFFY',name:'Big Stiffy',                daily:100, col:'#c084fc',dec:18,addr:null},
+  {g:'sb',sym:'UNUSc', name:'UNUS Coin',                 daily:100, col:'#60a5fa',dec:18,addr:null},
+  {g:'sb',sym:'WHORE', name:'Dirty Hooker',              daily:100, col:'#f472b6',dec:18,addr:null},
+  {g:'sb',sym:'LDRG',  name:'LDRG',                      daily:100, col:'#4ade80',dec:18,addr:null},
+  {g:'sb',sym:'GUMBS', name:'Gummy Bear Shares',         daily:100, col:'#fb923c',dec:18,addr:null},
+  {g:'ot',sym:'TEXAN', name:'Texan Token',               daily:200, col:'#fbbf24',dec:18,addr:'0xcfcffe432a48db53f59c301422d2edd77b2a88d7'},
+  {g:'ot',sym:'COM',   name:'Communis',                  daily:200, col:'#38bdf8',dec:18,addr:'0x0195d5990a7d6d7ee7a3a4610e357bb660494ba0'},
+  {g:'ot',sym:'HDRN',  name:'Hedron',                    daily:200, col:'#a78bfa',dec:9, addr:'0x3819f64f282bf135d62168C1e513280dAF905e06'},
+  {g:'ot',sym:'HEXO',  name:"HexO's",                    daily:200, col:'#ff6b35',dec:18,addr:null}, // TODO: fill in address
+  {g:'ot',sym:'ICSA',  name:'ICOSA',                     daily:200, col:'#34d399',dec:18,addr:'0xfc4913214444aF5c715cc9F7b52655e788A569ed'},
+  {g:'ot',sym:'WETH',  name:'Wrapped Ether',             daily:400, col:'#627eea',dec:18,addr:'0x02DcdD04e3F455D838cd1249292C58f3B79e3C3C'},
+  {g:'ot',sym:'PRINT', name:'PRINT',                     daily:500, col:'#818cf8',dec:18,addr:'0x6c203a555824ec90a215f37916cf8db58ebe2fa3'},
+  {g:'ot',sym:'LUNCH', name:'LUNCH',                     daily:100, col:'#86efac',dec:18,addr:'0x1f5e09ca8164d33d3923ec89c76620b15c51c25b'},
+  {g:'ot',sym:'PIZZA', name:'PIZZA',                     daily:100, col:'#fdba74',dec:18,addr:'0x3e7ae951d9925e6e5de6140a99b90c3259445c9b'},
+  {g:'ot',sym:'GRU',   name:'GRU',                       daily:50,  col:'#94a3b8',dec:18,addr:null}, // TODO: fill in address
+  {g:'ot',sym:'PP',    name:'PoorPleb',                  daily:50,  col:'#c4b5fd',dec:18,addr:'0x9565c2036963697786705120fc59310f747bcfd0'},
+  {g:'ot',sym:'POP',   name:'POP',                       daily:50,  col:'#6ee7b7',dec:18,addr:null}, // TODO: fill in address
+  {g:'ot',sym:'PULP',  name:'PULP',                      daily:50,  col:'#fda4af',dec:18,addr:null}, // TODO: fill in address
+  {g:'ot',sym:'PUPPY', name:'Puppy',                     daily:50,  col:'#fcd34d',dec:18,addr:null}, // TODO: fill in address
+  {g:'ot',sym:'PCHRIST',name:'pChrist',                  daily:50,  col:'#93c5fd',dec:18,addr:null}, // TODO: fill in address
+  {g:'ot',sym:'LUNA',  name:'LUNA',                      daily:50,  col:'#c084fc',dec:18,addr:'0xa26d5253ab96e04afe51b4c1614b29b11889d3b1'}, // verify: low-activity on scan
+  {g:'ot',sym:'BOK',   name:'Springbok',                 daily:50,  col:'#6ee7b7',dec:18,addr:null}, // TODO: fill in address
+  {g:'ot',sym:'DOGE',  name:'Democrats Officially Getting Exposed',daily:50,col:'#fbbf24',dec:18,addr:null}, // TODO: fill in address
+  {g:'ot',sym:'FRIEND',name:'TOM',                       daily:50,  col:'#38bdf8',dec:18,addr:null}, // TODO: fill in address
+  {g:'ot',sym:'VAG',   name:'VAG',                       daily:50,  col:'#f87171',dec:18,addr:null}, // TODO: fill in address
+];
+
+const TICK=[
+  {s:'OTB',p:'$0.000420',c:'+4.2%',u:1},{s:'ONE',p:'$0.000180',c:'-1.1%',u:0},
+  {s:'PLS',p:'$0.000031',c:'+2.8%',u:1},{s:'HEX',p:'$0.00891',c:'+1.4%',u:1},
+  {s:'PLSX',p:'$0.0000120',c:'-0.6%',u:0},{s:'INC',p:'$0.00240',c:'+7.3%',u:1},
+  {s:'9INCH',p:'$0.000640',c:'+9.1%',u:1},{s:'WETH',p:'$3,420',c:'+1.1%',u:1},
+  {s:'TEXAN',p:'$0.000055',c:'+3.1%',u:1},{s:'BBC',p:'$0.000210',c:'+5.5%',u:1},
+  {s:'PRINT',p:'$0.0000010',c:'+0.8%',u:1},{s:'HDRN',p:'$0.000012',c:'-0.4%',u:0},
+];
+
+const DEMO_V=[
+  {id:1,prize:'500,000 PLS',bounty:'25,000',highBid:'8,240',bidder:'0x3fa1...b22c',endTs:Date.now()+86400000*3,desc:'Community donation — PLS prize vault'},
+  {id:2,prize:'1,000,000 HEX',bounty:'50,000',highBid:'21,000',bidder:'0xa9c2...7d14',endTs:Date.now()+86400000*6,desc:'HEX bridge prize by anonymous donor'},
+  {id:3,prize:'10,000 PLSX',bounty:'5,000',highBid:'3,100',bidder:'0x77f9...0c8a',endTs:Date.now()+86400000*0.7,desc:'PLSX ecosystem bounty vault'},
+  {id:4,prize:'2.5 WETH',bounty:'200,000',highBid:'88,000',bidder:'0xb3e8...41f2',endTs:Date.now()+86400000*12,desc:'Ethereum prize — rare opportunity'},
+];
+
+let provider,signer,userAddr,oneBal=0n,otbBal=0n,pday=0,curF='all',vSort='bid',activePSym='',activeTier=0,activeVT='n',bidVId=0;
+let poolTotalTsh=2_750_000, poolDailyInfl=0; // updated by updateStats()
+let liveProtocol=null, oneContract=null, otbContractR=null; // set after wallet connect + contract deploy
+
+function renderTicker(){const d=[...TICK,...TICK];document.getElementById('ticker').innerHTML=d.map(t=>`<div class="ti"><b>${t.s}</b> ${t.p} <span class="${t.u?'tu':'td'}">${t.c}</span></div>`).join('');}
+
+function showTab(id,el){document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));document.getElementById('pane-'+id).classList.add('on');el.classList.add('on');}
+
+const GL={rh:'RH Tokens','9i':'9inch',sb:'S.B Detox',ot:'Other'};
+
+function filterPools(g){
+  curF=g;
+  ['all','rh','9i','sb','ot'].forEach(k=>{const e=document.getElementById('pf-'+k);if(e)e.className=k===g?'sm sm-otb':'sm sm-mut';});
+  renderPools();
+}
+
+// ── Token logo / address helpers ──────────────────────────────────────────────
+function shortAddr(a){ return a.slice(0,6)+'…'+a.slice(-4); }
+function logoUrl(addr){
+  if(!addr) return '';
+  try{ return 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/pulse/assets/'+ethers.getAddress(addr)+'/logo.png'; }
+  catch(e){ return ''; }
+}
+async function copyAddr(addr){
+  try{ await navigator.clipboard.writeText(addr); toast('Address copied','ok'); }
+  catch(e){
+    // fallback for insecure context (local file)
+    const ta=document.createElement('textarea'); ta.value=addr;
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); toast('Address copied','ok');
+  }
+}
+async function addToMM(sym, addr, dec){
+  if(!window.ethereum){ toast('MetaMask not detected','err'); return; }
+  try{
+    await window.ethereum.request({
+      method:'wallet_watchAsset',
+      params:{ type:'ERC20', options:{ address:addr, symbol:sym, decimals:dec, image:logoUrl(addr) } }
+    });
+  } catch(e){ toast('MetaMask: '+(e.message||'rejected'),'err'); }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+function renderPools(){
+  const list=curF==='all'?POOLS:POOLS.filter(p=>p.g===curF);
+  const el=document.getElementById('poolList');
+  let html='',lastG='';
+  list.forEach(p=>{
+    if(curF==='all'&&p.g!==lastG){html+=`<div class="grptag">${GL[p.g]}</div>`;lastG=p.g;}
+    const ini=p.sym.replace(/[^A-Z0-9]/gi,'').slice(0,4).toUpperCase();
+    const tvlMult = 400 + (p.sym.split('').reduce((a,c)=>a+c.charCodeAt(0),0) % 800);
+    const demoTvl = p.daily * tvlMult;
+    const apy = (p.daily * 3 * 365 / demoTvl * 100).toFixed(1);
+    const tvlFmt = demoTvl>=1e6 ? (demoTvl/1e6).toFixed(2)+'M' : (demoTvl/1e3).toFixed(1)+'K';
+
+    // Logo: try Trust Wallet CDN; onerror swaps to coloured initials
+    const logo = p.addr ? logoUrl(p.addr) : '';
+    const logoHtml = p.addr
+      ? `<img src="${logo}" alt="${ini}"
+            style="width:100%;height:100%;border-radius:50%;object-fit:cover"
+            onerror="this.style.display='none';this.nextSibling.style.display='flex'"
+         /><span style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:${p.col}">${ini}</span>`
+      : `<span style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:${p.col}">${ini}</span>`;
+
+    // Address row
+    const addrHtml = p.addr
+      ? `<div class="paddr">
+           <span class="paddr-val" title="${p.addr}">${shortAddr(p.addr)}</span>
+           <button class="paddr-btn" onclick="copyAddr('${p.addr}')" title="Copy contract address">⧉ Copy</button>
+           <button class="paddr-btn" onclick="addToMM('${p.sym}','${p.addr}',${p.dec})" title="Add to MetaMask">🦊 Add</button>
+         </div>`
+      : `<div class="paddr"><span class="paddr-none">contract address — fill in before mainnet</span></div>`;
+
+    html+=`<div class="pc">
+  <div class="pt">
+    <div class="pid">
+      <div class="pico" style="background:${p.col}18;border:1px solid ${p.col}33;overflow:hidden">${logoHtml}</div>
+      <div><div class="psym">${p.sym}</div><div class="psub">${p.name}</div></div>
+    </div>
+    <div style="text-align:right"><div class="pemit-val">${p.daily.toLocaleString()}</div><div class="pemit-lbl" style="display:flex;align-items:center;justify-content:flex-end;gap:4px"><img src="one-logo.jpg" class="tlogo-sm" alt="ONE">ONE / day</div></div>
+  </div>
+  ${addrHtml}
+  <div class="pm">
+    <div><div class="psl">Demo TVL</div><div class="psv">${tvlFmt} ${p.sym}</div></div>
+    <div><div class="psl">Your Stake</div><div class="psv" style="color:var(--otb)">—</div></div>
+    <div><div class="psl">ONE Pending</div><div class="psv" style="color:var(--one)">—</div></div>
+    <div><div class="psl">Est. APY (365d)</div><div class="psv" style="color:var(--grn)">${apy}%</div></div>
+  </div>
+  <div class="ptiers">
+    <span style="font-size:10px;color:var(--tx3);margin-right:4px">TIERS:</span>
+    <span class="tchip">No Lock 1.0×</span><span class="tchip">30d 1.1×</span><span class="tchip">90d 1.2×</span><span class="tchip">180d 2.0×</span><span class="tchip best">365d 3.0× ★</span>
+  </div>
+  <div class="pft">
+    <button class="sm sm-one" onclick="openPool('${p.sym}','${p.name}',${p.daily})">Stake &amp; Earn ONE</button>
+    <button class="sm sm-mut" onclick="claimPool('${p.sym}')">Claim ONE</button>
+    <button class="sm sm-mut" onclick="withdrawPool('${p.sym}')">Withdraw</button>
+  </div>
+</div>`;
+  });
+  el.innerHTML=html||'<div class="nodata">No pools in this group</div>';
+}
+
+function openPool(sym,name,daily){activePSym=sym;activeTier=0;setText('mPool-t','Stake '+sym+' — Earn ONE Daily');setText('pTag',sym);document.getElementById('pAmt').value='';renderPTiers(daily);calcPool();om('mPool');}
+function renderPTiers(daily){document.getElementById('pTiers').innerHTML=TIERS.map((t,i)=>`<button class="chip${i===activeTier?' on':''}" onclick="selTier(${i},${daily})">${t.days===0?'No Lock':t.days+'d'} — ${t.mult}</button>`).join('');}
+function selTier(i,d){activeTier=i;renderPTiers(d);calcPool();}
+function calcPool(){const t=TIERS[activeTier];setText('pi-lock',t.days===0?'No lock':t.days+' days');setText('pi-mult',t.mult);const a=parseFloat(document.getElementById('pAmt').value)||0;if(a>0){setText('pi-day','~'+(a/1000*(t.bps/10000)).toFixed(4)+' ONE');setText('pi-yr','~'+(a/1000*(t.bps/10000)*365).toFixed(2)+' ONE');}else{setText('pi-day','—');setText('pi-yr','—');}}
+function pMax(){if(!userAddr){toast('Connect wallet','err');return;}toast('Use MAX after connecting','inf');}
+function doDeposit(){if(!userAddr){toast('Connect wallet first','err');return;}const a=document.getElementById('pAmt').value;if(!a||+a<=0){toast('Enter an amount','err');return;}toast('Sending approval for '+activePSym+'...','inf');cm('mPool');}
+function claimPool(sym){if(!userAddr){toast('Connect wallet','err');return;}toast('Claiming ONE from '+sym+'...','inf');}
+function withdrawPool(sym){if(!userAddr){toast('Connect wallet','err');return;}toast('Withdraw: check lock for '+sym,'inf');}
+
+function calcBurn(){document.getElementById('burnOut').value=document.getElementById('burnAmt').value;}
+function burnMax(){if(!userAddr){toast('Connect wallet','err');return;}document.getElementById('burnAmt').value=ethers.formatEther(oneBal);calcBurn();}
+async function doBurn(){
+  if(!userAddr){toast('Connect wallet first','err');return;}
+  const a=document.getElementById('burnAmt').value;
+  if(!a||+a<=0){toast('Enter amount','err');return;}
+  if(!oneContract||!otbContractR){toast('Contracts not yet deployed','err');return;}
+  try{
+    const amt=ethers.parseEther(a);
+    toast('Step 1/2 — Approve ONE in MetaMask...','inf');
+    const approveTx=await (new ethers.Contract(CFG.ONE,ONE_ABI,signer)).approve(CFG.OTB,amt);
+    await approveTx.wait();
+    toast('Step 2/2 — Burning ONE for OTB...','inf');
+    const tx=await (new ethers.Contract(CFG.OTB,OTB_ABI,signer)).burnOneForOtb(amt);
+    await tx.wait();
+    toast('Done! OTB received 🔥','ok');
+    await loadChainData();
+  }catch(e){toast(e.reason||e.message||'Transaction failed','err');}
+}
+
+function setDur(d,el){document.getElementById('stDays').value=d;document.querySelectorAll('#pane-stake .chips .chip').forEach(c=>c.classList.remove('on'));if(el)el.classList.add('on');calcStake();}
+function stMax(){if(!userAddr){toast('Connect wallet','err');return;}document.getElementById('stAmt').value=ethers.formatEther(otbBal);calcStake();}
+function calcStake(){
+  const amt=parseFloat(document.getElementById('stAmt').value)||0;
+  const days=parseInt(document.getElementById('stDays').value)||0;
+  const clearIds=['pv-bonus','pv-amp','pv-tsh','pv-daily','pv-yearly','pv-total','pv-end','pv-share'];
+  if(amt<=0||days<400||days>10000){clearIds.forEach(id=>setText(id,'—'));return;}
+  const dur    = 1+(days-400)/(10000-400);
+  const amp    = pday<1825 ? 20*(1825-pday)/1825 : 0;
+  const bonus  = amt*amp/100;
+  const tsh    = (amt+bonus)/1000*dur;
+  // Correct earnings formula: (your T-Shares / total pool T-Shares) × daily inflation
+  // poolTotalTsh includes 5M founder stakes — they dilute user rewards but decrease
+  // as founder stakes are claimed over 27 years and real user stakes grow
+  const newTotal   = poolTotalTsh + tsh;
+  const poolShare  = tsh / newTotal; // your fraction of the pool
+  const dailyOtb   = poolShare * poolDailyInfl;
+  const yearlyOtb  = dailyOtb * 365;
+  const totalOtb   = dailyOtb * days;
+  const sharePct   = (poolShare*100).toFixed(4);
+  // format helpers
+  const fmt = n => n>=1e6 ? (n/1e6).toFixed(2)+'M' : n>=1e3 ? (n/1e3).toFixed(2)+'K' : n.toFixed(4);
+  const endDate = new Date(Date.now() + days * 86400000);
+  const calLbl  = endDate.toLocaleString('default',{month:'short',year:'numeric'});
+  setText('pv-bonus', dur.toFixed(4)+'×');
+  setText('pv-amp',   bonus>=0.01 ? '+'+bonus.toFixed(2)+' OTB ('+amp.toFixed(1)+'% bonus)' : 'Expired Day 1,825');
+  setText('pv-tsh',   tsh.toFixed(4)+' T-Shares');
+  setText('pv-daily', '~'+fmt(dailyOtb)+' OTB');
+  setText('pv-yearly','~'+fmt(yearlyOtb)+' OTB');
+  setText('pv-total', '~'+fmt(totalOtb)+' OTB');
+  setText('pv-end',   'Day '+(pday+days)+' · '+calLbl+' ('+Math.round(days/365*10)/10+' yrs)');
+  setText('pv-share', sharePct+'% of pool');
+  setText('pv-virt',  Math.max(0,5e9-Math.floor(pday/100)*1e8).toLocaleString()+' OTB');
+}
+function openStakeConfirm(){
+  if(!userAddr){toast('Connect wallet first','err');return;}
+  const amt=document.getElementById('stAmt').value;const d=document.getElementById('stDays').value;
+  if(!amt||+amt<=0){toast('Enter stake amount','err');return;}
+  if(!d||+d<400||+d>10000){toast('Duration must be 400–10,000 days','err');return;}
+  document.getElementById('mStake-b').innerHTML=`<div class="card" style="background:var(--s2)"><div class="ir"><span class="il">Staking</span><span class="iv otb">${(+amt).toFixed(2)} OTB</span></div><div class="ir"><span class="il">Duration</span><span class="iv">${(+d).toLocaleString()} days</span></div><div class="ir"><span class="il">T-Shares (est.)</span><span class="iv gld">${document.getElementById('pv-tsh').textContent}</span></div><div class="ir"><span class="il">Ends Day</span><span class="iv">${document.getElementById('pv-end').textContent}</span></div><div class="ir"><span class="il">Daily OTB (est.)</span><span class="iv grn">${document.getElementById('pv-daily').textContent}</span></div></div><div class="alert aw" style="margin-top:12px"><span>⚠</span><span>OTB is burned on stake. You receive it back plus inflation at end-stake. Early exit incurs a penalty.</span></div>`;
+  om('mStake');
+}
+async function doStake(){
+  if(!otbContractR){toast('Contracts not yet deployed','err');return;}
+  const amt=document.getElementById('stAmt').value;
+  const days=document.getElementById('stDays').value;
+  if(!amt||+amt<=0||!days||+days<400||+days>10000){toast('Invalid stake params','err');return;}
+  cm('mStake');
+  try{
+    toast('Staking OTB — confirm in MetaMask...','inf');
+    const tx=await (new ethers.Contract(CFG.OTB,OTB_ABI,signer)).stake(ethers.parseEther(amt),parseInt(days));
+    await tx.wait();
+    toast('Stake created! 🎉','ok');
+    await loadChainData();
+  }catch(e){toast(e.reason||e.message||'Transaction failed','err');}
+}
+async function endStakeLive(stakeId){
+  if(!signer){toast('Connect wallet','err');return;}
+  try{
+    toast('Ending stake #'+stakeId+' — confirm in MetaMask...','inf');
+    const tx=await (new ethers.Contract(CFG.OTB,OTB_ABI,signer)).endStake(stakeId);
+    await tx.wait();
+    toast('Stake ended — OTB claimed! 🎉','ok');
+    await loadChainData();
+  }catch(e){toast(e.reason||e.message||'Transaction failed','err');}
+}
+async function claimFounder(stakeId){
+  if(!signer){toast('Connect wallet','err');return;}
+  try{
+    toast('Claiming founder stake #'+stakeId+'...','inf');
+    const tx=await (new ethers.Contract(CFG.OTB,OTB_ABI,signer)).endStake(stakeId);
+    await tx.wait();
+    toast('Founder stake claimed! 🎉','ok');
+    await loadChainData();
+  }catch(e){toast(e.reason||e.message||'Transaction failed','err');}
+}
+const DEMO_STAKES=[
+  {id:51, otb:50000,   tsh:48.21,   startDay:0,   endDay:3650,  pending:1842.44, status:'active'},
+  {id:52, otb:25000,   tsh:22.86,   startDay:120, endDay:2045,  pending:634.12,  status:'active'},
+  {id:53, otb:100000,  tsh:99.12,   startDay:400, endDay:10400, pending:8821.77, status:'active'},
+  {id:54, otb:10000,   tsh:8.55,    startDay:800, endDay:1600,  pending:0,       status:'grace'},
+  {id:55, otb:5000,    tsh:4.12,    startDay:200, endDay:600,   pending:0,       status:'ended'},
+  {id:1,  otb:0,       tsh:100000,  startDay:0,   endDay:200,   pending:44200.0, status:'founder'},
+];
+
+function loadStakes(){if(otbContractR&&userAddr){loadLiveStakes();}else{renderDemoStakes();}}
+
+function renderDemoStakes(){
+  const now = pday;
+  let totOtb=0, totTsh=0, totYield=0;
+  const rows = DEMO_STAKES.map(s=>{
+    const isFounder = s.id<=50;
+    const totalDays = s.endDay - s.startDay;
+    const elapsed   = Math.min(now - s.startDay, totalDays);
+    const pct       = totalDays>0 ? Math.max(0,Math.min(100,(elapsed/totalDays*100))) : 100;
+    const daysLeft  = Math.max(0, s.endDay - now);
+    totOtb   += s.otb;
+    totTsh   += s.tsh;
+    totYield += s.pending;
+
+    let statusBadge, actionBtn;
+    if(s.status==='ended'){
+      statusBadge=`<span class="badge b-end">ENDED</span>`;
+      actionBtn=`<span style="color:var(--tx3);font-size:11px">—</span>`;
+    } else if(s.status==='founder'){
+      statusBadge=`<span class="badge b-fnd">FOUNDER</span>`;
+      actionBtn=`<button class="sm sm-one" onclick="toast('Founder stake matures Day ${s.endDay}','inf')">Claim</button>`;
+    } else if(s.status==='grace'){
+      statusBadge=`<span class="badge b-grc">GRACE PERIOD</span>`;
+      actionBtn=`<button class="sm sm-gld" onclick="toast('End stake #${s.id}...','inf')">End Stake</button>`;
+    } else {
+      statusBadge=`<span class="badge b-act">ACTIVE</span>`;
+      actionBtn=`<button class="sm sm-otb" onclick="toast('End stake #${s.id}...','inf')">End Stake</button>`;
+    }
+
+    const otbFmt = s.otb>0 ? s.otb.toLocaleString()+' OTB' : '—';
+    const tshFmt = s.tsh>=1000 ? (s.tsh/1000).toFixed(2)+'K T-Sh' : s.tsh.toFixed(4)+' T-Sh';
+    const pendFmt= s.pending>0 ? '<span style="color:var(--grn)">'+s.pending.toLocaleString(undefined,{maximumFractionDigits:2})+' OTB</span>' : '—';
+
+    // Timeline visual
+    const dotCls = s.status==='grace'?'grc':s.status==='ended'?'end':s.status==='founder'?'fnd':'act';
+    const dotPct = s.status==='ended'||s.status==='grace' ? 100 : pct;
+    const fillColor = s.status==='grace'?'var(--gld)':s.status==='ended'?'var(--tx3)':s.status==='founder'?'var(--one)':'var(--grn)';
+    // Calendar estimate for end day
+    const msPerDay = 86400000;
+    const endCal = new Date(Date.now() + daysLeft * msPerDay).toLocaleString('default',{month:'short',year:'2-digit'});
+    const endLbl = s.status==='ended' ? 'Done' : 'D'+s.endDay+(daysLeft>0?' · '+endCal:'');
+    const timeline = `<div class="stl">
+      <div class="stl-track">
+        <div class="stl-fill" style="width:${Math.min(100,dotPct).toFixed(1)}%;background:${fillColor}"></div>
+        <div class="stl-dot ${dotCls}" style="left:${Math.min(100,dotPct).toFixed(1)}%"></div>
+      </div>
+      <div class="stl-lbl"><span>D${s.startDay}</span><span>${endLbl}</span></div>
+    </div>`;
+
+    return `<tr>
+      <td style="color:var(--tx3)">#${s.id}</td>
+      <td style="color:var(--otb)">${otbFmt}</td>
+      <td style="color:var(--gld)">${tshFmt}</td>
+      <td>${timeline}</td>
+      <td>${s.status==='ended'?'<span style="color:var(--tx3)">—</span>':daysLeft.toLocaleString()+'d'}</td>
+      <td>${pendFmt}</td>
+      <td>${statusBadge}</td>
+      <td>${actionBtn}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('stBody').innerHTML = rows;
+  document.getElementById('stFoot').style.display='';
+  setText('tot-otb', totOtb.toLocaleString()+' OTB');
+  setText('tot-tsh', totTsh.toLocaleString()+' T-Sh');
+  setText('tot-yield', totYield.toLocaleString(undefined,{maximumFractionDigits:0})+' OTB');
+}
+
+function loadVaults(){renderVaults([...DEMO_V]);}
+function sortV(mode){
+  vSort=mode;
+  const s=[...DEMO_V];
+  if(mode==='bid')s.sort((a,b)=>+b.highBid.replace(/,/g,'')-+a.highBid.replace(/,/g,''));
+  else s.sort((a,b)=>a.endTs-b.endTs);
+  document.getElementById('vs-bid').className=mode==='bid'?'sm sm-one':'sm sm-mut';
+  document.getElementById('vs-end').className=mode==='end'?'sm sm-one':'sm sm-mut';
+  renderVaults(s);
+}
+function renderVaults(vaults){
+  setText('va-act',vaults.filter(v=>!v.settled).length);
+  setText('va-set','—');setText('va-burn','—');
+  const now=Date.now();const el=document.getElementById('vGrid');
+  if(!vaults.length){el.innerHTML='<div style="grid-column:1/-1"><div class="nodata"><span>🏆</span>No active vaults</div></div>';return;}
+  el.innerHTML=vaults.map(v=>{
+    const sec=Math.max(0,(v.endTs-now)/1000);
+    const dd=Math.floor(sec/86400);const hh=Math.floor((sec%86400)/3600);const mm=Math.floor((sec%3600)/60);
+    const timer=sec<86400?`${hh}h ${mm}m`:`${dd}d ${hh}h`;
+    const ending=sec<43200;
+    const mn=(Math.ceil(+v.highBid.replace(/,/g,'')*1.05*10)/10).toLocaleString();
+    return `<div class="vc">
+  <div class="vt"><div><div class="vprize">${v.prize}</div><div class="vdesc">${v.desc}</div></div><div class="vtimer${ending?' end':''}">${ending?'🔥 ':''}${timer}</div></div>
+  <div><div class="vbid-lbl">HIGHEST BID</div><div class="vbid-val">${v.highBid} <span style="font-size:14px;color:var(--one)">ONE</span></div><div class="vbid-adr">${v.bidder}</div></div>
+  ${v.bounty!=='0'?`<div class="vbounty"><span class="vbl">⚡ Instant Win (Bounty Price)</span><span class="vbv">${v.bounty} ONE</span></div>`:''}
+  <div class="vft"><button class="sm sm-gld" style="flex:1" onclick="openBid(${v.id},'${v.prize}','${v.highBid}','${v.bounty}','${mn}')">Place Bid</button><button class="sm sm-mut" onclick="doSettle(${v.id})">Settle</button></div>
+</div>`;
+  }).join('');
+}
+function openBid(id,prize,high,bounty,mn){
+  bidVId=id;setText('mBid-t','Place Bid — '+prize);
+  document.getElementById('mBid-b').innerHTML=`<div class="card" style="background:var(--s2)"><div class="ir"><span class="il">Current High Bid</span><span class="iv gld">${high} ONE</span></div><div class="ir"><span class="il">Min Next Bid</span><span class="iv">${mn} ONE</span></div>${bounty!=='0'?`<div class="ir"><span class="il">⚡ Instant Win</span><span class="iv grn">${bounty} ONE</span></div>`:''}</div><div class="alert ai" style="margin-top:8px"><span>ℹ</span><span>Outbid users refunded instantly. Anti-snipe: last 10 min bids extend by 15 min (max 3×).</span></div>`;
+  document.getElementById('bidAmt').value='';om('mBid');
+}
+function bidMax(){if(!userAddr){toast('Connect wallet','err');return;}document.getElementById('bidAmt').value=ethers.formatEther(oneBal);}
+function doBid(){if(!userAddr){toast('Connect wallet first','err');return;}const a=document.getElementById('bidAmt').value;if(!a||+a<=0){toast('Enter bid amount','err');return;}toast('Placing bid of '+a+' ONE...','inf');cm('mBid');}
+function doSettle(id){if(!userAddr){toast('Connect wallet','err');return;}toast('Settling vault #'+id+'...','inf');}
+function setVT(t){activeVT=t;document.getElementById('vt-n').classList.toggle('on',t==='n');document.getElementById('vt-t').classList.toggle('on',t==='t');document.getElementById('vtok-f').style.display=t==='t'?'block':'none';document.getElementById('vAmtTag').textContent=t==='n'?'PLS':'TOKENS';}
+function doCreateVault(){if(!userAddr){toast('Connect wallet first','err');return;}const a=document.getElementById('vAmt').value;const d=document.getElementById('vDur').value;if(!a||+a<=0){toast('Enter prize amount','err');return;}if(!d||+d<1||+d>100){toast('Duration: 1–100 days','err');return;}toast('Creating vault — confirm in MetaMask...','inf');cm('mVault');}
+
+function updateStats(){
+  let virt, real, effSup, amp, ampDays, tshPay;
+
+  if(liveProtocol){
+    // ── Live path: data from protocolStats() ──────────────────────────────
+    pday         = liveProtocol.day;
+    poolTotalTsh = liveProtocol.totalTShares;
+    poolDailyInfl= liveProtocol.dailyInflOtb;
+    virt         = liveProtocol.virtualSupply;
+    real         = liveProtocol.otbSupply;
+    effSup       = real + virt;
+    amp          = liveProtocol.amplifierPct;
+    ampDays      = liveProtocol.daysUntilAmpEnds;
+    tshPay       = poolTotalTsh>0 ? poolDailyInfl/poolTotalTsh : 0;
+    const staked = liveProtocol.otbStaked;
+    setText('b-burned',  (liveProtocol.totalBurned>=1e6?(liveProtocol.totalBurned/1e6).toFixed(2)+'M':liveProtocol.totalBurned.toLocaleString(undefined,{maximumFractionDigits:0}))+' ONE');
+    setText('b-supply',  (real>=1e6?(real/1e6).toFixed(2)+'M':real.toLocaleString(undefined,{maximumFractionDigits:0}))+' OTB');
+    setText('ov-staked', (staked>=1e6?(staked/1e6).toFixed(2)+'M':staked.toLocaleString(undefined,{maximumFractionDigits:0}))+' OTB');
+    setText('ov-sp',     liveProtocol.sharePrice.toFixed(2)+' OTB');
+  } else {
+    // ── Demo fallback: estimate from wall-clock + correct contract constants ─
+    const genesis = 1700000000000; // approximate — replace CFG.launchDay after deploy
+    pday         = Math.max(0, Math.floor((Date.now()-genesis)/86400000));
+    virt         = Math.max(0, 10_000_000_000 - Math.floor(pday/100)*200_000_000);
+    real         = 50_000_000;
+    effSup       = real + virt;
+    amp          = pday<1825 ? 20*(1825-pday)/1825 : 0;
+    ampDays      = Math.max(0, 1825-pday);
+    poolTotalTsh = 2_500_000 + 250_000; // 25 founder × 100K + demo user T-Shares
+    poolDailyInfl= effSup * 0.0369 / 365;
+    tshPay       = poolTotalTsh>0 ? poolDailyInfl/poolTotalTsh : 0;
+  }
+
+  setText('hdr-day', pday);
+  setText('s-day',   pday);
+  setText('s-tsh',   poolTotalTsh.toLocaleString()+' T-Sh');
+  setText('s-effsup', (effSup/1e9).toFixed(3)+'B OTB ('+Math.round(real/1e6)+'M real + '+(virt/1e9).toFixed(1)+'B virtual)');
+  setText('s-tshpay', tshPay.toFixed(4)+' OTB');
+  setText('tsp-today',tshPay.toFixed(4));
+  setText('s-amppct', amp.toFixed(1)+'%');
+  setText('s-ampdays',ampDays.toLocaleString()+' days remaining');
+  document.getElementById('s-ampbar').style.width=(amp/20*100).toFixed(1)+'%';
+  setText('pv-virt',  virt.toLocaleString()+' OTB');
+  renderTshChart();
+  renderOneChart();
+  calcStake();
+}
+
+function renderTshChart(){
+  const svg = document.getElementById('tsp-chart');
+  if(!svg) return;
+  const W = svg.parentElement.clientWidth||600;
+  const H = 90;
+  const PAD_L = 46, PAD_R = 10, PAD_T = 8, PAD_B = 6;
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+
+  const pts=[];
+  const numPts = Math.min(pday,60);
+  const startDay = Math.max(0, pday-numPts);
+  for(let d=0;d<=numPts;d++){
+    const day = startDay+d;
+    const v2 = Math.max(0,5e9-Math.floor(day/100)*1e8);
+    const r2 = 20e6+(day*50000);
+    const eff2 = r2+v2;
+    const infl2 = eff2*0.0369/365;
+    const pay2 = infl2/(poolTotalTsh||100000);
+    pts.push({d:day, y:pay2});
+  }
+
+  if(pts.length<2){svg.innerHTML='';return;}
+
+  const minY = Math.min(...pts.map(p=>p.y));
+  const maxY = Math.max(...pts.map(p=>p.y));
+  const yRange = maxY-minY || maxY*0.1 || 0.0001;
+  const chartW = W - PAD_L - PAD_R;
+  const chartH = H - PAD_T - PAD_B;
+  const scX = d => PAD_L + (d-startDay)/(numPts||1)*chartW;
+  const scY = y => PAD_T + chartH - (y-minY)/yRange*chartH;
+
+  const lpts = pts.map(p=>`${scX(p.d).toFixed(1)},${scY(p.y).toFixed(1)}`).join(' ');
+  const fillPts = `${PAD_L},${(PAD_T+chartH).toFixed(1)} `+lpts+` ${(PAD_L+chartW).toFixed(1)},${(PAD_T+chartH).toFixed(1)}`;
+
+  // Y-axis ticks
+  const yTicks = [minY, (minY+maxY)/2, maxY];
+  const yTickSvg = yTicks.map(v=>`
+    <line x1="${PAD_L-4}" y1="${scY(v).toFixed(1)}" x2="${(PAD_L+chartW).toFixed(1)}" y2="${scY(v).toFixed(1)}" stroke="rgba(90,78,62,.35)" stroke-width="1" stroke-dasharray="${v===minY?'none':'3 4'}"/>
+    <text x="${PAD_L-7}" y="${(scY(v)+3.5).toFixed(1)}" text-anchor="end" fill="#5a4e3e" font-family="JetBrains Mono,monospace" font-size="8.5">${v.toFixed(4)}</text>
+  `).join('');
+
+  // Dots — every nth point + always last
+  const step = Math.max(1,Math.floor(pts.length/25));
+  const dotsSvg = pts.filter((_,i)=>i%step===0||i===pts.length-1).map((p,i,arr)=>{
+    const isLast = i===arr.length-1;
+    const r = isLast ? 4.5 : 3;
+    const fill = isLast ? '#e8c97a' : '#deb96a';
+    const sw = isLast ? 1.5 : 0;
+    const stroke = isLast ? '#ede0c4' : 'none';
+    return `<circle cx="${scX(p.d).toFixed(1)}" cy="${scY(p.y).toFixed(1)}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" opacity="${isLast?1:0.8}">
+      <title>Day ${p.d}: ${p.y.toFixed(5)} OTB/T-Sh</title>
+    </circle>`;
+  }).join('');
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="tspGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#deb96a" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="#deb96a" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    ${yTickSvg}
+    <line x1="${PAD_L}" y1="${(PAD_T+chartH).toFixed(1)}" x2="${(PAD_L+chartW).toFixed(1)}" y2="${(PAD_T+chartH).toFixed(1)}" stroke="rgba(90,78,62,.5)" stroke-width="1"/>
+    <polygon points="${fillPts}" fill="url(#tspGrad)"/>
+    <polyline points="${lpts}" fill="none" stroke="#deb96a" stroke-width="1.5" stroke-opacity="0.75"/>
+    ${dotsSvg}
+    <rect x="${PAD_L}" y="${PAD_T}" width="${chartW}" height="${chartH}" fill="transparent" id="tsp-hover"/>
+  `;
+
+  // Hover tooltip
+  const hoverRect = svg.querySelector('#tsp-hover');
+  const tip = document.getElementById('tsp-tip');
+  const wrap = document.getElementById('tsp-chart-wrap');
+  if(hoverRect && tip && wrap){
+    hoverRect.addEventListener('mousemove', e=>{
+      const rect = svg.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const frac = Math.max(0,Math.min(1,(mx-PAD_L)/chartW));
+      const idx = Math.round(frac*(pts.length-1));
+      const p = pts[Math.max(0,Math.min(pts.length-1,idx))];
+      if(!p) return;
+      tip.textContent = 'Day '+p.d+': '+p.y.toFixed(5)+' OTB / T-Share';
+      tip.style.display='block';
+      tip.style.left = Math.min(mx+10, wrap.clientWidth-tip.offsetWidth-4)+'px';
+      tip.style.top = '2px';
+    });
+    hoverRect.addEventListener('mouseleave',()=>{tip.style.display='none';});
+  }
+
+  setText('tsp-x0','Day '+startDay);
+  setText('tsp-xn','Day '+pday);
+}
+
+function renderOneChart(){
+  const svg = document.getElementById('one-chart');
+  if(!svg) return;
+  const W = svg.parentElement.clientWidth||600;
+  const H = 58;
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+
+  const pts=[];
+  const days = Math.max(2, pday);
+  for(let d=0;d<=days;d++){
+    const adoption = Math.min(1.5, 1 + d*0.0025);
+    pts.push({d, y: d * 10850 * adoption});
+  }
+
+  const maxY = pts[pts.length-1].y;
+  if(maxY<=0){svg.innerHTML='';return;}
+  const scX = d => 8 + d/days*(W-16);
+  const scY = y => H-4 - y/maxY*(H-10);
+
+  const lpts = pts.map(p=>`${scX(p.d).toFixed(1)},${scY(p.y).toFixed(1)}`).join(' ');
+  const fillPts = `8,${H-2} `+lpts+` ${(W-8).toFixed(1)},${H-2}`;
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="oneGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#a07468" stop-opacity="0.28"/>
+        <stop offset="100%" stop-color="#a07468" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <polygon points="${fillPts}" fill="url(#oneGrad)"/>
+    <polyline points="${lpts}" fill="none" stroke="#a07468" stroke-width="1.5"/>
+    <circle cx="${scX(pts[pts.length-1].d).toFixed(1)}" cy="${scY(pts[pts.length-1].y).toFixed(1)}" r="4" fill="#a07468" stroke="#ede0c4" stroke-width="1.5">
+      <title>Day ${pday}: ${(maxY/1e6).toFixed(2)}M ONE minted total</title>
+    </circle>
+  `;
+  const total = maxY;
+  setText('one-chart-total', total>=1e6?(total/1e6).toFixed(2)+'M ONE':total>=1e3?(total/1e3).toFixed(1)+'K ONE':total.toFixed(0)+' ONE');
+  setText('one-chart-x','Day '+pday);
+}
+
+function toggleInfo(id){
+  const btn = document.querySelector('#ib-'+id+' .info-toggle');
+  const body = document.getElementById('ibd-'+id);
+  if(!body) return;
+  const open = body.style.display!=='none';
+  body.style.display = open ? 'none' : 'block';
+  if(btn) btn.classList.toggle('open', !open);
+}
+
+async function connectWallet(){
+  if(!window.ethereum){toast('Install MetaMask','err');return;}
+  try{const a=await window.ethereum.request({method:'eth_requestAccounts'});await doConnect(a[0]);await ensureNet();}
+  catch(e){toast(e.message||'Connection failed','err');}
+}
+async function doConnect(addr){
+  provider=new ethers.BrowserProvider(window.ethereum);signer=await provider.getSigner();userAddr=addr;
+  const b=document.getElementById('wBtn');b.textContent=addr.slice(0,6)+'...'+addr.slice(-4);b.classList.add('on');
+  // Only wire contracts if real addresses have been filled in post-deploy
+  const isReal = a => a && !a.startsWith('0x000000000000000000000000000000000000000');
+  if(isReal(CFG.ONE) && isReal(CFG.OTB)){
+    oneContract  = new ethers.Contract(CFG.ONE,  ONE_ABI, provider);
+    otbContractR = new ethers.Contract(CFG.OTB,  OTB_ABI, provider);
+    await loadChainData();
+  }
+  loadVaults();
+}
+
+// ── Live contract reads — called after wallet connect when CFG addresses are set ──
+async function loadChainData(){
+  if(!oneContract || !otbContractR || !userAddr) return;
+  try {
+    const [stats, oneBal_, otbBal_, totalMinted, totalBurned] = await Promise.all([
+      otbContractR.protocolStats(),
+      oneContract.balanceOf(userAddr),
+      otbContractR.balanceOf(userAddr),
+      oneContract.totalMinted(),
+      oneContract.totalBurned(),
+    ]);
+    oneBal = oneBal_;
+    otbBal = otbBal_;
+    liveProtocol = {
+      day:             Number(stats.daysSinceLaunch),
+      totalTShares:    Number(ethers.formatEther(stats.totalTShares)),
+      sharePrice:      Number(ethers.formatEther(stats.sharePrice)),
+      amplifierPct:    Number(stats.amplifierPct),
+      daysUntilAmpEnds:Number(stats.daysUntilAmplifierEnds),
+      daysUntilVirtEnds:Number(stats.daysUntilVirtualEnds),
+      dailyInflOtb:    Number(ethers.formatEther(stats.dailyInflationOtb)),
+      otbStaked:       Number(ethers.formatEther(stats.otbTotalStaked)),
+      otbSupply:       Number(ethers.formatEther(stats.otbTotalSupply)),
+      virtualSupply:   Number(ethers.formatEther(stats.virtualSupply)),
+      totalMinted:     Number(ethers.formatEther(totalMinted)),
+      totalBurned:     Number(ethers.formatEther(totalBurned)),
+    };
+    // Update user balance displays
+    const fmtBal = (raw,dec)=>{const n=Number(ethers.formatUnits(raw,dec));return n>=1e6?(n/1e6).toFixed(2)+'M':n>=1000?n.toLocaleString(undefined,{maximumFractionDigits:2}):n.toFixed(4);};
+    setText('hdr-otb', fmtBal(otbBal,18)+' OTB');
+    setText('hdr-one', fmtBal(oneBal,18)+' ONE');
+    updateStats();
+    await loadLiveStakes();
+  } catch(e){
+    console.warn('Contract read failed, using demo data:', e.message);
+  }
+}
+
+// ── Load user stakes from userDashboard() ──
+async function loadLiveStakes(){
+  if(!otbContractR || !userAddr) return;
+  const body = document.getElementById('stBody');
+  if(!body) return;
+  body.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:14px"><span class="spin"></span> Loading stakes...</td></tr>`;
+  try{
+    const views = await otbContractR.userDashboard(userAddr);
+    // Filter out zero stubs (founder stake slots with no on-chain data)
+    const live = views.filter(s => Number(s.id) > 0 && (Number(s.principal)>0 || Number(s.id)<=25));
+    if(!live.length){body.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">No stakes yet</td></tr>`;return;}
+    let totOtb=0,totTsh=0,totYield=0;
+    const rows=live.map(s=>{
+      const id       = Number(s.id);
+      const otb      = Number(ethers.formatEther(s.principal));
+      const tsh      = Number(ethers.formatEther(s.tShares));
+      const pend     = Number(ethers.formatEther(s.pendingOtb));
+      const startDay = Number(s.startDay);
+      const endDay   = Number(s.endDay);
+      const daysLeft = Number(s.daysRemaining);
+      const isFounder= id<=25;
+      totOtb+=otb; totTsh+=tsh; totYield+=pend;
+
+      let statusBadge,actionBtn;
+      if(s.ended){
+        statusBadge=`<span class="badge b-end">ENDED</span>`;
+        actionBtn=`<span style="color:var(--tx3);font-size:11px">—</span>`;
+      } else if(isFounder){
+        statusBadge=`<span class="badge b-fnd">FOUNDER</span>`;
+        actionBtn=`<button class="sm sm-one" onclick="claimFounder(${id})">Claim</button>`;
+      } else if(s.inGracePeriod){
+        statusBadge=`<span class="badge b-grc">GRACE PERIOD</span>`;
+        actionBtn=`<button class="sm sm-gld" onclick="endStakeLive(${id})">End Stake</button>`;
+      } else {
+        statusBadge=`<span class="badge b-act">ACTIVE</span>`;
+        actionBtn=`<button class="sm sm-otb" onclick="endStakeLive(${id})">End Stake</button>`;
+      }
+      const totalDays = endDay - startDay;
+      const elapsed   = Math.min(pday - startDay, totalDays);
+      const pct       = totalDays>0 ? Math.max(0,Math.min(100,elapsed/totalDays*100)) : 100;
+      const dotPct    = s.ended||s.inGracePeriod ? 100 : pct;
+      const fillColor = s.inGracePeriod?'var(--gld)':s.ended?'var(--tx3)':isFounder?'var(--one)':'var(--grn)';
+      const endCal    = daysLeft>0 ? new Date(Date.now()+daysLeft*86400000).toLocaleString('default',{month:'short',year:'2-digit'}) : '';
+      const endLbl    = s.ended?'Done':'D'+endDay+(daysLeft>0?' · '+endCal:'');
+      const timeline  = `<div class="stl"><div class="stl-track"><div class="stl-fill" style="width:${Math.min(100,dotPct).toFixed(1)}%;background:${fillColor}"></div><div class="stl-dot ${s.inGracePeriod?'grc':s.ended?'end':isFounder?'fnd':'act'}" style="left:${Math.min(100,dotPct).toFixed(1)}%"></div></div><div class="stl-lbl"><span>D${startDay}</span><span>${endLbl}</span></div></div>`;
+      const otbFmt    = otb>0 ? otb.toLocaleString()+' OTB' : '—';
+      const tshFmt    = tsh>=1000?(tsh/1000).toFixed(2)+'K T-Sh':tsh.toFixed(4)+' T-Sh';
+      const pendFmt   = pend>0?`<span style="color:var(--grn)">${pend.toLocaleString(undefined,{maximumFractionDigits:2})} OTB</span>`:'—';
+      return `<tr><td style="color:var(--tx3)">#${id}</td><td style="color:var(--otb)">${otbFmt}</td><td style="color:var(--gld)">${tshFmt}</td><td>${timeline}</td><td>${s.ended?'<span style="color:var(--tx3)">—</span>':daysLeft.toLocaleString()+'d'}</td><td>${pendFmt}</td><td>${statusBadge}</td><td>${actionBtn}</td></tr>`;
+    }).join('');
+    body.innerHTML=rows;
+    document.getElementById('stFoot').style.display='';
+    setText('tot-otb',totOtb.toLocaleString()+' OTB');
+    setText('tot-tsh',totTsh.toLocaleString()+' T-Sh');
+    setText('tot-yield',totYield.toLocaleString(undefined,{maximumFractionDigits:0})+' OTB');
+  }catch(e){console.warn('loadLiveStakes:',e);body.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">Error loading stakes</td></tr>`;}
+}
+async function ensureNet(){
+  try{const id=await window.ethereum.request({method:'eth_chainId'});if(id!==CFG.chainId){await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:CFG.chainId,chainName:'PulseChain',rpcUrls:['https://rpc.pulsechain.com'],nativeCurrency:{name:'Pulse',symbol:'PLS',decimals:18},blockExplorerUrls:['https://scan.pulsechain.com']}]});}}
+  catch(e){toast('Switch to PulseChain','err');}
+}
+
+function om(id){document.getElementById(id).classList.add('open');}
+function cm(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});});
+
+let _tt;
+function toast(msg,type='inf'){const el=document.getElementById('toast');el.textContent=msg;el.className='show '+type;clearTimeout(_tt);_tt=setTimeout(()=>el.className='',3500);}
+function setText(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+
+window.addEventListener('load',()=>{
+  renderTicker();renderPools();updateStats();loadVaults();renderDemoStakes();
+  setTimeout(()=>checkForUpdate(false), 2500); // silent check after page settles
+  if(window.ethereum){
+    window.ethereum.on('accountsChanged',a=>a.length?doConnect(a[0]):location.reload());
+    window.ethereum.on('chainChanged',()=>location.reload());
+    window.ethereum.request({method:'eth_accounts'}).then(a=>{if(a.length)doConnect(a[0]);});
+  }
+  setInterval(updateStats,60000);
+});
+</script>
+</body>
+</html>
