@@ -22,11 +22,6 @@
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;font-size:15px;line-height:1.5}
 .shell{max-width:1100px;margin:0 auto;padding:0 16px 80px}
 
-/* TICKER */
-.ticker-wrap{background:var(--s1);border-bottom:1px solid var(--bdr);overflow:hidden;height:30px;display:flex;align-items:center}
-.ticker-track{display:flex;gap:36px;width:max-content;animation:tick 55s linear infinite}
-@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.ti{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tx3);white-space:nowrap}
 .ti b{color:var(--tx2)}.tu{color:var(--grn)}.td{color:var(--red)}
 
 /* HEADER */
@@ -392,8 +387,6 @@ tfoot td{padding:10px 14px;background:var(--s2);font-family:'JetBrains Mono',mon
     <button class="upd-dis" onclick="document.getElementById('update-bar').classList.remove('show')" title="Dismiss">✕</button>
   </div>
 </div>
-
-<div class="ticker-wrap"><div class="ticker-track" id="ticker"></div></div>
 
 <div class="shell">
 
@@ -823,14 +816,6 @@ const POOLS=[
   {g:'ot',sym:'VAG',   name:'VAG',                       daily:50,  col:'#f87171',dec:18,addr:'0x004FEC934D11D02C1734DDC72754C0ffE5e45ECC',poolAddr:'0x8A2453Ea788D553d3100CD903F1Ac5a5DF00b674'},
 ];
 
-const TICK=[
-  {s:'OTB',p:'$0.000420',c:'+4.2%',u:1},{s:'ONE',p:'$0.000180',c:'-1.1%',u:0},
-  {s:'PLS',p:'$0.000031',c:'+2.8%',u:1},{s:'HEX',p:'$0.00891',c:'+1.4%',u:1},
-  {s:'PLSX',p:'$0.0000120',c:'-0.6%',u:0},{s:'INC',p:'$0.00240',c:'+7.3%',u:1},
-  {s:'9INCH',p:'$0.000640',c:'+9.1%',u:1},{s:'WETH',p:'$3,420',c:'+1.1%',u:1},
-  {s:'TEXAN',p:'$0.000055',c:'+3.1%',u:1},{s:'BBC',p:'$0.000210',c:'+5.5%',u:1},
-  {s:'PRINT',p:'$0.0000010',c:'+0.8%',u:1},{s:'HDRN',p:'$0.000012',c:'-0.4%',u:0},
-];
 
 const DEMO_V=[
   {id:1,prize:'500,000 PLS',bounty:'25,000',highBid:'8,240',bidder:'0x3fa1...b22c',endTs:Date.now()+86400000*3,desc:'Community donation — PLS prize vault'},
@@ -843,7 +828,6 @@ let provider,signer,userAddr,oneBal=0n,otbBal=0n,pday=0,curF='all',vSort='bid',a
 let poolTotalTsh=2_750_000, poolDailyInfl=0; // updated by updateStats()
 let liveProtocol=null, oneContract=null, otbContractR=null; // set after wallet connect + contract deploy
 
-function renderTicker(){const d=[...TICK,...TICK];document.getElementById('ticker').innerHTML=d.map(t=>`<div class="ti"><b>${t.s}</b> ${t.p} <span class="${t.u?'tu':'td'}">${t.c}</span></div>`).join('');}
 
 function showTab(id,el){document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));document.getElementById('pane-'+id).classList.add('on');el.classList.add('on');}
 
@@ -1481,7 +1465,7 @@ function toast(msg,type='inf'){const el=document.getElementById('toast');el.text
 function setText(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
 
 window.addEventListener('load',()=>{
-  renderTicker();renderPools();updateStats();loadVaults();
+  renderPools();updateStats();loadVaults();
   // Show connect-wallet prompt instead of demo stakes — contracts are live
   const stBody=document.getElementById('stBody');
   if(stBody)stBody.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:30px;font-size:13px">Connect your wallet to view your stakes</td></tr>`;
