@@ -8,3 +8,5 @@
 !version.json
 !README.md
 !.gitignore
+!OctalBytes-Start.bat
+!start-server.ps1
