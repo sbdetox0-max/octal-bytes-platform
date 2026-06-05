@@ -1406,38 +1406,41 @@ async function loadLiveStakes(){
       otbContractR.launchDay(),
     ]);
     const launchD = Number(launchDayRaw);
-    const isOwner = ownerAddr.toLowerCase() === userAddr.toLowerCase();
+    // isContractOwner: can actually execute endFounderStake (requires Safe multisig)
+    const isContractOwner = ownerAddr.toLowerCase() === userAddr.toLowerCase();
 
     // Regular stakes: userDashboard returns non-zero structs for real storage stakes
     const regular = views.filter(s => Number(s.id) > 0);
 
-    // Founder stakes: lazy/synthetic — not in storage, must be loaded separately
+    // Founder stakes are lazy — no Stake struct in storage, so userDashboard returns
+    // zeroed entries (id=0) for them. Detect by counting zero-id slots; those correspond
+    // to stake IDs 1..N in the deployer's userStakeIds array.
+    const zeroSlots = views.filter(s => Number(s.id) === 0).length;
     let founderRows = [];
-    if(isOwner){
-      const FCOUNT = 25;
-      const checks = await Promise.all(
-        Array.from({length:FCOUNT},(_,i)=>otbContractR.isFounderStakeClaimed(i+1))
-      );
-      const endDays = await Promise.all(
-        Array.from({length:FCOUNT},(_,i)=>otbContractR.founderStakeEndDay(i+1))
-      );
-      for(let i=0;i<FCOUNT;i++){
+    if(zeroSlots > 0){
+      const fCount = Math.min(zeroSlots, 25);
+      const [checks, endDays] = await Promise.all([
+        Promise.all(Array.from({length:fCount},(_,i)=>otbContractR.isFounderStakeClaimed(i+1))),
+        Promise.all(Array.from({length:fCount},(_,i)=>otbContractR.founderStakeEndDay(i+1))),
+      ]);
+      for(let i=0;i<fCount;i++){
         if(checks[i]) continue; // skip already claimed
         const endDay = Number(endDays[i]);
         founderRows.push({
           id: BigInt(i+1),
           principal: 0n,
-          tShares: ethers.parseEther('100000'), // 100,000 T-Shares
+          tShares: ethers.parseEther('100000'), // 100,000 T-Shares per stake
           poolSharePct: 0n,
           startDay: launchD,
           endDay: endDay,
           daysRemaining: BigInt(Math.max(0, endDay - pday)),
           daysLate: 0n,
-          pendingOtb: 0n, // contract doesn't expose accOtbPerTShare; collected at maturity
+          pendingOtb: 0n, // paid out at maturity via endFounderStake()
           earlyExitPenalty: 0n,
           ended: false,
           inGracePeriod: false,
           isOverdue: false,
+          _needsSafe: !isContractOwner, // flag: claim requires Safe multisig
         });
       }
     }
@@ -1462,7 +1465,9 @@ async function loadLiveStakes(){
         actionBtn=`<span style="color:var(--tx3);font-size:11px">—</span>`;
       } else if(isFounder){
         statusBadge=`<span class="badge b-fnd">FOUNDER</span>`;
-        actionBtn=`<button class="sm sm-one" onclick="claimFounder(${id})">Claim</button>`;
+        actionBtn=s._needsSafe
+          ? `<span style="color:var(--tx3);font-size:10px" title="Connect as Safe multisig to claim">Requires Safe</span>`
+          : `<button class="sm sm-one" onclick="claimFounder(${id})">Claim</button>`;
       } else if(s.inGracePeriod){
         statusBadge=`<span class="badge b-grc">GRACE PERIOD</span>`;
         actionBtn=`<button class="sm sm-gld" onclick="endStakeLive(${id})">End Stake</button>`;
