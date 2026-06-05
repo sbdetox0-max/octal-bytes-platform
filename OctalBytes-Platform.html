@@ -1185,7 +1185,7 @@ function updateStats(){
     setText('ov-sp',     liveProtocol.sharePrice.toFixed(2)+' OTB');
   } else {
     // ── Demo fallback: estimate from wall-clock + correct contract constants ─
-    const genesis = 1700000000000; // approximate — replace CFG.launchDay after deploy
+    const genesis = 1780617600000; // June 5 2026 00:00 UTC — mainnet launch day
     pday         = Math.max(0, Math.floor((Date.now()-genesis)/86400000));
     virt         = Math.max(0, 10_000_000_000 - Math.floor(pday/100)*200_000_000);
     real         = 50_000_000;
@@ -1355,7 +1355,7 @@ function toggleInfo(id){
 }
 
 async function connectWallet(){
-  if(!window.ethereum){toast('Install MetaMask','err');return;}
+  if(!window.ethereum){toast('MetaMask not detected — if installed, go to Chrome Extensions → MetaMask → Details → enable Allow access to file URLs','err');return;}
   try{const a=await window.ethereum.request({method:'eth_requestAccounts'});await doConnect(a[0]);await ensureNet();}
   catch(e){toast(e.message||'Connection failed','err');}
 }
@@ -1481,7 +1481,10 @@ function toast(msg,type='inf'){const el=document.getElementById('toast');el.text
 function setText(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
 
 window.addEventListener('load',()=>{
-  renderTicker();renderPools();updateStats();loadVaults();renderDemoStakes();
+  renderTicker();renderPools();updateStats();loadVaults();
+  // Show connect-wallet prompt instead of demo stakes — contracts are live
+  const stBody=document.getElementById('stBody');
+  if(stBody)stBody.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:30px;font-size:13px">Connect your wallet to view your stakes</td></tr>`;
   setTimeout(()=>checkForUpdate(false), 2500); // silent check after page settles
   if(window.ethereum){
     window.ethereum.on('accountsChanged',a=>a.length?doConnect(a[0]):location.reload());
