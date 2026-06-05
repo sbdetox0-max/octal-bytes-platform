@@ -760,6 +760,10 @@ const OTB_ABI=[
   "function currentSharePrice() view returns (uint256)",
   "function launchDay() view returns (uint256)",
   "function totalTShares() view returns (uint256)",
+  "function owner() view returns (address)",
+  "function founderStakeEndDay(uint256) view returns (uint256)",
+  "function isFounderStakeClaimed(uint256) view returns (bool)",
+  "function endFounderStake(uint256) external",
 ];
 
 const TIERS=[
@@ -1018,7 +1022,7 @@ async function claimFounder(stakeId){
   if(!signer){toast('Connect wallet','err');return;}
   try{
     toast('Claiming founder stake #'+stakeId+'...','inf');
-    const tx=await (new ethers.Contract(CFG.OTB,OTB_ABI,signer)).endStake(stakeId);
+    const tx=await (new ethers.Contract(CFG.OTB,OTB_ABI,signer)).endFounderStake(stakeId);
     await tx.wait();
     toast('Founder stake claimed! 🎉','ok');
     await loadChainData();
@@ -1396,9 +1400,49 @@ async function loadLiveStakes(){
   if(!body) return;
   body.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:14px"><span class="spin"></span> Loading stakes...</td></tr>`;
   try{
-    const views = await otbContractR.userDashboard(userAddr);
-    // Filter out zero stubs (founder stake slots with no on-chain data)
-    const live = views.filter(s => Number(s.id) > 0 && (Number(s.principal)>0 || Number(s.id)<=25));
+    const [views, ownerAddr, launchDayRaw] = await Promise.all([
+      otbContractR.userDashboard(userAddr),
+      otbContractR.owner(),
+      otbContractR.launchDay(),
+    ]);
+    const launchD = Number(launchDayRaw);
+    const isOwner = ownerAddr.toLowerCase() === userAddr.toLowerCase();
+
+    // Regular stakes: userDashboard returns non-zero structs for real storage stakes
+    const regular = views.filter(s => Number(s.id) > 0);
+
+    // Founder stakes: lazy/synthetic — not in storage, must be loaded separately
+    let founderRows = [];
+    if(isOwner){
+      const FCOUNT = 25;
+      const checks = await Promise.all(
+        Array.from({length:FCOUNT},(_,i)=>otbContractR.isFounderStakeClaimed(i+1))
+      );
+      const endDays = await Promise.all(
+        Array.from({length:FCOUNT},(_,i)=>otbContractR.founderStakeEndDay(i+1))
+      );
+      for(let i=0;i<FCOUNT;i++){
+        if(checks[i]) continue; // skip already claimed
+        const endDay = Number(endDays[i]);
+        founderRows.push({
+          id: BigInt(i+1),
+          principal: 0n,
+          tShares: ethers.parseEther('100000'), // 100,000 T-Shares
+          poolSharePct: 0n,
+          startDay: launchD,
+          endDay: endDay,
+          daysRemaining: BigInt(Math.max(0, endDay - pday)),
+          daysLate: 0n,
+          pendingOtb: 0n, // contract doesn't expose accOtbPerTShare; collected at maturity
+          earlyExitPenalty: 0n,
+          ended: false,
+          inGracePeriod: false,
+          isOverdue: false,
+        });
+      }
+    }
+
+    const live = [...founderRows, ...regular];
     if(!live.length){body.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">No stakes yet</td></tr>`;return;}
     let totOtb=0,totTsh=0,totYield=0;
     const rows=live.map(s=>{
