@@ -1,6 +1,6 @@
 # OctalBytes Platform
 
-**Offline HEX-style staking dashboard for PulseChain — runs entirely in your browser, no server needed.**
+**HEX-style staking dashboard for PulseChain — one exe, no install, no account.**
 
 ---
 
@@ -8,13 +8,13 @@
 
 👉 **[Get the latest release →](https://github.com/sbdetox0-max/octal-bytes-platform/releases/latest)**
 
-Download `OctalBytes-Platform.html`, open it in any modern browser, connect MetaMask on PulseChain, and you're live.
+Download `OctalBytes.exe`, double-click it, and you're live.
 
 ---
 
 ## What is it?
 
-OctalBytes is a time-lock staking protocol on PulseChain, inspired by HEX. This single HTML file is the full platform dashboard — no installation, no account, no hosting required.
+OctalBytes is a time-lock staking protocol on PulseChain, inspired by HEX. The platform runs as a single Windows executable — no installation, no account, no hosting required.
 
 **Three sections:**
 
@@ -28,13 +28,15 @@ OctalBytes is a time-lock staking protocol on PulseChain, inspired by HEX. This 
 
 ## How to use
 
-1. Download `OctalBytes-Platform.html` from [Releases](https://github.com/sbdetox0-max/octal-bytes-platform/releases/latest)
-2. Open the file in Chrome, Brave, or Firefox
+1. Download `OctalBytes.exe` from [Releases](https://github.com/sbdetox0-max/octal-bytes-platform/releases/latest)
+2. Double-click it — a terminal window opens and your browser launches automatically
 3. Install [MetaMask](https://metamask.io) if you haven't already
 4. Add PulseChain to MetaMask (the platform will prompt you automatically)
 5. Click **Connect Wallet**
 
-That's it. Your wallet talks directly to the PulseChain RPC — nothing goes through any third-party server.
+Keep the terminal window open while using the platform. Close it to stop.
+
+Your wallet talks directly to the PulseChain RPC — nothing goes through any third-party server.
 
 ---
 
@@ -42,7 +44,7 @@ That's it. Your wallet talks directly to the PulseChain RPC — nothing goes thr
 
 The platform checks for updates automatically when you open it. If a new version is available, a banner appears at the top with a download link. You can also click the **v1.0.0** pill in the header at any time to check manually.
 
-To update: download the new `.html` file and replace the old one.
+To update: download the new `OctalBytes.exe` from [Releases](https://github.com/sbdetox0-max/octal-bytes-platform/releases/latest) and replace the old one.
 
 ---
 
