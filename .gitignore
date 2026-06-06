@@ -1,13 +1,8 @@
 # Ignore everything by default
 *
 
-# Except the 5 platform distribution files
+# Tracked files
 !OctalBytes-Platform.html
-!otb-logo.jpg
-!one-logo.jpg
 !version.json
 !README.md
 !.gitignore
-!OctalBytes.exe
-!OctalBytes-Start.bat
-!start-server.ps1
