@@ -821,13 +821,6 @@ const POOLS=[
 ];
 
 
-const DEMO_V=[
-  {id:1,prize:'500,000 PLS',bounty:'25,000',highBid:'8,240',bidder:'0x3fa1...b22c',endTs:Date.now()+86400000*3,desc:'Community donation — PLS prize vault'},
-  {id:2,prize:'1,000,000 HEX',bounty:'50,000',highBid:'21,000',bidder:'0xa9c2...7d14',endTs:Date.now()+86400000*6,desc:'HEX bridge prize by anonymous donor'},
-  {id:3,prize:'10,000 PLSX',bounty:'5,000',highBid:'3,100',bidder:'0x77f9...0c8a',endTs:Date.now()+86400000*0.7,desc:'PLSX ecosystem bounty vault'},
-  {id:4,prize:'2.5 WETH',bounty:'200,000',highBid:'88,000',bidder:'0xb3e8...41f2',endTs:Date.now()+86400000*12,desc:'Ethereum prize — rare opportunity'},
-];
-
 let provider,signer,userAddr,oneBal=0n,otbBal=0n,pday=0,curF='all',vSort='bid',activePSym='',activeTier=0,activeVT='n',bidVId=0;
 let poolTotalTsh=2_750_000, poolDailyInfl=0; // updated by updateStats()
 let liveProtocol=null, oneContract=null, otbContractR=null; // set after wallet connect + contract deploy
@@ -1037,74 +1030,7 @@ const DEMO_STAKES=[
   {id:1,  otb:0,       tsh:100000,  startDay:0,   endDay:200,   pending:44200.0, status:'founder'},
 ];
 
-function loadStakes(){if(otbContractR&&userAddr){loadLiveStakes();}else{renderDemoStakes();}}
 
-function renderDemoStakes(){
-  const now = pday;
-  let totOtb=0, totTsh=0, totYield=0;
-  const rows = DEMO_STAKES.map(s=>{
-    const isFounder = s.id<=50;
-    const totalDays = s.endDay - s.startDay;
-    const elapsed   = Math.min(now - s.startDay, totalDays);
-    const pct       = totalDays>0 ? Math.max(0,Math.min(100,(elapsed/totalDays*100))) : 100;
-    const daysLeft  = Math.max(0, s.endDay - now);
-    totOtb   += s.otb;
-    totTsh   += s.tsh;
-    totYield += s.pending;
-
-    let statusBadge, actionBtn;
-    if(s.status==='ended'){
-      statusBadge=`<span class="badge b-end">ENDED</span>`;
-      actionBtn=`<span style="color:var(--tx3);font-size:11px">—</span>`;
-    } else if(s.status==='founder'){
-      statusBadge=`<span class="badge b-fnd">FOUNDER</span>`;
-      actionBtn=`<button class="sm sm-one" onclick="toast('Founder stake matures Day ${s.endDay}','inf')">Claim</button>`;
-    } else if(s.status==='grace'){
-      statusBadge=`<span class="badge b-grc">GRACE PERIOD</span>`;
-      actionBtn=`<button class="sm sm-gld" onclick="toast('End stake #${s.id}...','inf')">End Stake</button>`;
-    } else {
-      statusBadge=`<span class="badge b-act">ACTIVE</span>`;
-      actionBtn=`<button class="sm sm-otb" onclick="toast('End stake #${s.id}...','inf')">End Stake</button>`;
-    }
-
-    const otbFmt = s.otb>0 ? s.otb.toLocaleString()+' OTB' : '—';
-    const tshFmt = s.tsh>=1000 ? (s.tsh/1000).toFixed(2)+'K T-Sh' : s.tsh.toFixed(4)+' T-Sh';
-    const pendFmt= s.pending>0 ? '<span style="color:var(--grn)">'+s.pending.toLocaleString(undefined,{maximumFractionDigits:2})+' OTB</span>' : '—';
-
-    // Timeline visual
-    const dotCls = s.status==='grace'?'grc':s.status==='ended'?'end':s.status==='founder'?'fnd':'act';
-    const dotPct = s.status==='ended'||s.status==='grace' ? 100 : pct;
-    const fillColor = s.status==='grace'?'var(--gld)':s.status==='ended'?'var(--tx3)':s.status==='founder'?'var(--one)':'var(--grn)';
-    // Calendar estimate for end day
-    const msPerDay = 86400000;
-    const endCal = new Date(Date.now() + daysLeft * msPerDay).toLocaleString('default',{month:'short',year:'2-digit'});
-    const endLbl = s.status==='ended' ? 'Done' : 'D'+s.endDay+(daysLeft>0?' · '+endCal:'');
-    const timeline = `<div class="stl">
-      <div class="stl-track">
-        <div class="stl-fill" style="width:${Math.min(100,dotPct).toFixed(1)}%;background:${fillColor}"></div>
-        <div class="stl-dot ${dotCls}" style="left:${Math.min(100,dotPct).toFixed(1)}%"></div>
-      </div>
-      <div class="stl-lbl"><span>D${s.startDay}</span><span>${endLbl}</span></div>
-    </div>`;
-
-    return `<tr>
-      <td style="color:var(--tx3)">#${s.id}</td>
-      <td style="color:var(--otb)">${otbFmt}</td>
-      <td style="color:var(--gld)">${tshFmt}</td>
-      <td>${timeline}</td>
-      <td>${s.status==='ended'?'<span style="color:var(--tx3)">—</span>':daysLeft.toLocaleString()+'d'}</td>
-      <td>${pendFmt}</td>
-      <td>${statusBadge}</td>
-      <td>${actionBtn}</td>
-    </tr>`;
-  }).join('');
-
-  document.getElementById('stBody').innerHTML = rows;
-  document.getElementById('stFoot').style.display='';
-  setText('tot-otb', totOtb.toLocaleString()+' OTB');
-  setText('tot-tsh', totTsh.toLocaleString()+' T-Sh');
-  setText('tot-yield', totYield.toLocaleString(undefined,{maximumFractionDigits:0})+' OTB');
-}
 
 function loadVaults(){renderVaults([]);}
 function sortV(mode){
@@ -1416,15 +1342,6 @@ async function loadLiveStakes(){
     // zeroed entries (id=0) for them. Detect by counting zero-id slots; those correspond
     // to stake IDs 1..N in the deployer's userStakeIds array.
     const zeroSlots = views.filter(s => Number(s.id) === 0).length;
-    console.log('[OTB Dashboard]', {
-      wallet: userAddr,
-      contractOwner: ownerAddr,
-      isContractOwner,
-      totalViewsReturned: views.length,
-      regularStakes: regular.length,
-      zeroIdSlots: zeroSlots,
-      note: zeroSlots > 0 ? 'Founder stake slots detected' : 'No founder slots — this wallet is not the deployer',
-    });
     let founderRows = [];
     if(zeroSlots > 0){
       const fCount = Math.min(zeroSlots, 25);
