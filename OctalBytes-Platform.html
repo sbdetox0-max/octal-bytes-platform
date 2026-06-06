@@ -1416,6 +1416,15 @@ async function loadLiveStakes(){
     // zeroed entries (id=0) for them. Detect by counting zero-id slots; those correspond
     // to stake IDs 1..N in the deployer's userStakeIds array.
     const zeroSlots = views.filter(s => Number(s.id) === 0).length;
+    console.log('[OTB Dashboard]', {
+      wallet: userAddr,
+      contractOwner: ownerAddr,
+      isContractOwner,
+      totalViewsReturned: views.length,
+      regularStakes: regular.length,
+      zeroIdSlots: zeroSlots,
+      note: zeroSlots > 0 ? 'Founder stake slots detected' : 'No founder slots — this wallet is not the deployer',
+    });
     let founderRows = [];
     if(zeroSlots > 0){
       const fCount = Math.min(zeroSlots, 25);
